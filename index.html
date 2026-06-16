@@ -1,0 +1,304 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="description" content="Eco Burabay — экологический проект по сохранению природы Бурабая." />
+  <title>Eco Burabay — Сканируй. Узнавай. Сохраняй.</title>
+  <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><circle cx='32' cy='32' r='30' fill='%23166534'/><text x='32' y='44' text-anchor='middle' font-size='28' fill='white'>🌿</text></svg>" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800&family=Raleway:wght@300;400;600;700&display=swap" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+<nav class="nav" id="nav">
+  <div class="nav__inner">
+    <a href="#home" class="nav__logo">
+      <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="19" cy="19" r="19" fill="#166534"/>
+        <path d="M19 8 C14 14 10 18 12 24 C14 28 19 30 19 30 C19 30 24 28 26 24 C28 18 24 14 19 8Z" fill="#86efac"/>
+        <path d="M19 16 L19 30" stroke="#166534" stroke-width="1.5" stroke-linecap="round"/>
+        <rect x="7" y="7" width="6" height="6" rx="1" fill="white" opacity="0.85"/>
+        <rect x="8" y="8" width="4" height="4" rx="0.5" fill="#166534"/>
+        <rect x="25" y="7" width="6" height="6" rx="1" fill="white" opacity="0.85"/>
+        <rect x="26" y="8" width="4" height="4" rx="0.5" fill="#166534"/>
+        <rect x="7" y="25" width="6" height="6" rx="1" fill="white" opacity="0.85"/>
+        <rect x="8" y="26" width="4" height="4" rx="0.5" fill="#166534"/>
+      </svg>
+      <span>Eco <strong>Burabay</strong></span>
+    </a>
+    <button class="nav__burger" id="burger" aria-label="Меню">
+      <span></span><span></span><span></span>
+    </button>
+    <ul class="nav__links" id="navLinks">
+      <li><a href="#guide">QR-гид</a></li>
+      <li><a href="#clean">Чистый Бурабай</a></li>
+      <li><a href="#trees">Моё дерево</a></li>
+      <li><a href="#map">Карта</a></li>
+      <li><a href="#volunteer">Волонтёры</a></li>
+      <li><button class="btn-admin-nav hidden" id="adminPanelBtn">🔑 Админка</button></li>
+      <li><button class="btn-auth" id="authBtn">Войти</button></li>
+    </ul>
+  </div>
+</nav>
+
+<section class="hero" id="home">
+  <div class="hero__bg-image"></div>
+  <div class="hero__overlay"></div>
+  
+  <div class="hero__content reveal">
+    <div class="hero__badge">Экологический проект Казахстана</div>
+    <h1 class="hero__title">Eco <span>Burabay</span></h1>
+    <p class="hero__slogan">Сканируй. Узнавай. Сохраняй.<br><em>Выращивай Бурабай вместе с нами!</em></p>
+    <p class="hero__desc">Цифровая платформа для сохранения природы и культурного наследия жемчужины Казахстана — национального природного парка «Бурабай»</p>
+    <div class="hero__btns">
+      <a href="#guide" class="btn btn--primary">Исслебовать QR-гид</a>
+      <a href="#trees" class="btn btn--outline">Посадить дерево</a>
+    </div>
+  </div>
+  
+  <div class="hero__stats reveal">
+    <div class="stat"><span class="stat__num" id="liveTreeCount">0</span><span class="stat__label">Деревьев посажено</span></div>
+    <div class="stat"><span class="stat__num" id="liveSightCount">0</span><span class="stat__label">QR-объектов</span></div>
+    <div class="stat"><span class="stat__num">340</span><span class="stat__label">Участников</span></div>
+    <div class="stat"><span class="stat__num" id="liveReportCount">2</span><span class="stat__label">Решённых проблем</span></div>
+  </div>
+</section>
+
+<div class="modal" id="authModal">
+  <div class="modal__overlay" onclick="closeAuthModal()"></div>
+  <div class="modal__box modal__box--sm">
+    <button class="modal__close" onclick="closeAuthModal()">✕</button>
+    
+    <div id="loginFormWindow">
+      <h3 class="auth-title">Вход в систему</h3>
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="loginEmail">Email / Логин</label>
+          <input type="email" id="loginEmail" required placeholder="example@mail.com">
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">Пароль</label>
+          <input type="password" id="loginPassword" required placeholder="••••••••">
+        </div>
+        <button type="submit" class="btn btn--primary btn--full">Войти</button>
+      </form>
+      <p class="auth-switch">Нет аккаунта? <a href="#" onclick="toggleAuthWindows(event, 'reg')">Зарегистрироваться</a></p>
+      <div class="auth-hint" style="font-size:0.8rem; margin-top:15px; color:#64748b; text-align:center;">💡 **Вход для Админа:**<br>Логин: <code>admin@eco.kz</code> | Пароль: <code>admin123</code></div>
+    </div>
+
+    <div id="registerFormWindow" class="hidden">
+      <h3 class="auth-title">Регистрация</h3>
+      <form id="registerForm">
+        <div class="form-group">
+          <label for="regName">Ваше имя</label>
+          <input type="text" id="regName" required placeholder="Иван Иванов">
+        </div>
+        <div class="form-group">
+          <label for="regEmail">Email</label>
+          <input type="email" id="regEmail" required placeholder="example@mail.com">
+        </div>
+        <div class="form-group">
+          <label for="regPassword">Пароль</label>
+          <input type="password" id="regPassword" required placeholder="Минимум 6 символов">
+        </div>
+        <button type="submit" class="btn btn--primary btn--full">Создать аккаунт</button>
+      </form>
+      <p class="auth-switch">Уже есть аккаунт? <a href="#" onclick="toggleAuthWindows(event, 'login')">Войти</a></p>
+    </div>
+  </div>
+</div>
+
+<section class="section admin-panel hidden" id="adminSection">
+  <div class="container">
+    <div class="section__head">
+      <span class="section__eyebrow">Панель администратора</span>
+      <h2>Управление эко-объектами</h2>
+    </div>
+    
+    <div class="admin-layout">
+      <div class="admin-card">
+        <h3 id="adminFormTitle">Добавить / Изменить объект</h3>
+        <form id="adminSightForm" class="admin-form">
+          <input type="hidden" id="editId" value="" />
+          <div class="form-group">
+            <label for="asName">Название объекта *</label>
+            <input type="text" id="asName" required />
+          </div>
+          <div class="form-group">
+            <label for="asSubtitle">Подзаголовок *</label>
+            <input type="text" id="asSubtitle" required />
+          </div>
+          <div class="form-group">
+            <label for="asImg">URL Картинки</label>
+            <input type="url" id="asImg" />
+          </div>
+          <div class="form-group">
+            <label for="asShortDesc">Краткое описание *</label>
+            <textarea id="asShortDesc" rows="2" required></textarea>
+          </div>
+          <div class="form-group">
+            <label for="asFullDesc">Полное описание *</label>
+            <textarea id="asFullDesc" rows="4" required></textarea>
+          </div>
+          <div style="display:flex; gap:10px;">
+            <button type="submit" class="btn btn--primary">Сохранить</button>
+            <button type="button" class="btn btn--outline" style="color:var(--slate); border-color:var(--slate)" id="cancelEditBtn" onclick="resetAdminForm()">Отмена</button>
+          </div>
+        </form>
+      </div>
+
+      <div class="admin-card">
+        <h3>Список объектов (с авто-генерацией QR)</h3>
+        <div class="admin-table-wrap">
+          <table class="admin-table">
+            <thead>
+              <tr><th>Название</th><th>QR</th><th>Действие</th></tr>
+            </thead>
+            <tbody id="adminSightsTableBody"></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section guide" id="guide">
+  <div class="container">
+    <div class="section__head reveal">
+      <span class="section__eyebrow">QR-гид по Бурабаю</span>
+      <h2>Достопримечательности</h2>
+    </div>
+    <div class="cards reveal" id="sightCards"></div>
+  </div>
+</section>
+
+<div class="modal" id="sightModal">
+  <div class="modal__overlay" onclick="closeModal()"></div>
+  <div class="modal__box">
+    <button class="modal__close" onclick="closeModal()">✕</button>
+    <div class="modal__content" id="modalContent"></div>
+  </div>
+</div>
+
+<section class="section clean" id="clean">
+  <div class="container">
+    <div class="clean__inner">
+      <div class="clean__content reveal">
+        <span class="section__eyebrow">Эко-патруль</span>
+        <h2>Заметили свалку или мусор? Сообщите нам!</h2>
+        <p>Сделайте фото, укажите геолокацию, и наши волонтёрские отряды оперативно отправятся на очистку территории.</p>
+        
+        <div class="clean__form-block">
+          <form id="cleanForm" class="clean-form" style="margin-top: 20px;">
+            <div class="form-group">
+              <label for="cfLocation">Где обнаружен мусор? *</label>
+              <input type="text" id="cfLocation" required placeholder="Например: Поляна Абылай хана, возле опушки" />
+            </div>
+            <div class="form-group">
+              <label for="cfDesc">Описание ситуации *</label>
+              <textarea id="cfDesc" rows="3" required placeholder="Пластиковые бутылки, пакеты..."></textarea>
+            </div>
+            <button type="submit" class="btn btn--primary">Отправить заявку в патруль</button>
+          </form>
+          
+          <div id="cleanSuccess" class="clean-success hidden" style="margin-top: 20px; background: #dcfce7; padding: 20px; border-radius: 12px; color: #166534;">
+            <h3 style="margin-bottom:10px;">✅ Заявка успешно принята!</h3>
+            <p>Спасибо за ваш вклад в сохранение природы. Эко-волонтёры уведомлены.</p>
+            <button class="btn btn--outline" style="color:#166534; border-color:#166534; margin-top:1rem; padding: 8px 16px; font-size:0.9rem;" onclick="resetCleanForm()">Отправить ещё</button>
+          </div>
+        </div>
+      </div>
+      <div class="clean__visual reveal">
+        <div class="clean__img-wrapper">
+          <img src="https://images.unsplash.com/photo-1618477388954-7852f32655ec?auto=format&fit=crop&w=800&q=80" alt="Волонтеры собирают мусор" />
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<section class="section trees" id="trees">
+  <div class="container">
+    <div class="section__head reveal">
+      <span class="section__eyebrow">Моё дерево в Бурабае</span>
+      <h2>Электронный реестр посаженных деревьев</h2>
+    </div>
+    <div class="trees__actions reveal">
+      <button class="btn btn--primary" onclick="openPlantModal()">🌱 Посадить своё дерево</button>
+      <div class="trees__search">
+        <input type="text" id="treeSearch" placeholder="Поиск дерева по имени..." oninput="filterTrees()" />
+      </div>
+    </div>
+    <div class="tree-grid reveal" id="treeGrid"></div>
+  </div>
+</section>
+
+<div class="modal" id="plantModal">
+  <div class="modal__overlay" onclick="closePlantModal()"></div>
+  <div class="modal__box modal__box--sm">
+    <button class="modal__close" onclick="closePlantModal()">✕</button>
+    <h3 style="margin-bottom:1.5rem;color:#166534">🌱 Регистрация нового дерева</h3>
+    <form id="plantForm">
+      <div class="form-group">
+        <label for="pName">Имя владельца / Название компании *</label>
+        <input type="text" id="pName" required placeholder="Батырхан" />
+      </div>
+      <div class="form-group">
+        <label for="pSpecies">Порода дерева *</label>
+        <select id="pSpecies" required>
+          <option value="Сосна обыкновенная">🌲 Сосна обыкновенная</option>
+          <option value="Берёза повислая">🌳 Берёза повислая</option>
+          <option value="Ель сибирская">🎄 Ель сибирская</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="pPlace">Сектор посадки *</label>
+        <input type="text" id="pPlace" placeholder="Зона №3 (Озеро Малое Чебачье)" required />
+      </div>
+      <button type="submit" class="btn btn--primary btn--full" onclick="plantTree(event)">Внести в реестр</button>
+    </form>
+  </div>
+</div>
+
+<section class="section map-section" id="map">
+  <div class="container">
+    <div class="section__head reveal">
+      <span class="section__eyebrow">Навигация</span>
+      <h2>Интерактивная карта Бурабая</h2>
+    </div>
+    <div class="map-container reveal">
+      <iframe src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d155823.1557005477!2d70.07689128913988!3d53.08051770020197!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x43a825b42c656911%3A0xc3bba4d6a666ea37!2z0JHRg9GA0LDQsdCw0LksINCa0LDQt9Cw0YXRgdGC0LDQvQ!5e0!3m2!1sru!2skz!4v1700000000000!5m2!1sru!2skz" width="100%" height="100%" style="border:0;" allowfullscreen="" loading="lazy"></iframe>
+    </div>
+  </div>
+</section>
+
+<section class="section volunteer" id="volunteer">
+  <div class="container">
+    <div class="volunteer__inner reveal">
+      <h2>Стань эко-волонтёром проекта</h2>
+      <p>Участвуйте в масштабных посадках леса, рейдах чистоты и просветительских мероприятиях.</p>
+      <form id="volForm" class="vol-form">
+        <input type="text" id="volName" placeholder="Ваше имя" required />
+        <input type="tel" id="volPhone" placeholder="+7 (707) 000-00-00" required />
+        <button type="submit" class="btn btn--secondary">Подать заявку</button>
+      </form>
+      <div id="volSuccess" class="hidden" style="color:white; margin-top:1rem; font-weight:600;">
+        🎉 Ура! Вы в команде. Мы свяжемся с вами в ближайшее время!
+      </div>
+    </div>
+  </div>
+</section>
+
+<footer class="footer">
+  <div class="container">
+    <p>&copy; 2026 EcoQR Burabay. Разработано для защиты природы Казахстана.</p>
+  </div>
+</footer>
+
+<script src="script.js"></script>
+</body>
+</html>
