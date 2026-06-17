@@ -27,7 +27,7 @@ const DEFAULT_SIGHTS = [
     id: 'burabay',
     name: 'Озеро Бурабай',
     subtitle: 'Главный водоём парка',
-    image: 'https://images.unsplash.com/photo-1627564547012-6eb6dc355bfa?auto=format&fit=crop&w=800&q=80',
+    image: 'https://borovoe.kz/upload/medialibrary/454/454cf69f5a0ad9b5bbeba27b18d9b644.jpg',
     shortDesc: 'Сердце национального парка — кристальное озеро среди гранитных скал.',
     description: 'Озеро Бурабай (Боровое) — бессточное озеро в Бурабайском районе Акмолинской области Казахстана. Оно окружено величественными сосновыми лесами и причудливыми скалами. Именно здесь, вдыхая чистейший воздух и глядя на зеркальную гладь воды, понимаешь ценность природы.'
   },
@@ -35,7 +35,7 @@ const DEFAULT_SIGHTS = [
     id: 'okzhetpes',
     name: 'Скала Окжетпес',
     subtitle: 'Высота около 200 м',
-    image: 'https://images.unsplash.com/photo-1589405858862-2ac9cbb41321?auto=format&fit=crop&w=800&q=80',
+    image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQk3V5RUyOVEO-SbDIzmLzxDftQsEoDcPcir5lAXspjuA&s=10',
     shortDesc: 'Величественная скала, чьё название означает «Стрела не долетит».',
     description: 'Гранитная скала на берегу озера Боровое. Её вершина напоминает лежащего слона. Окжетпес воспета в многочисленных легендах казахского народа. С вершины открывается панорамный вид на весь Бурабай.'
   },
@@ -43,7 +43,7 @@ const DEFAULT_SIGHTS = [
     id: 'zhumbaktas',
     name: 'Скала Жумбактас',
     subtitle: 'Загадочный камень',
-    image: 'https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=800&q=80',
+    image: 'https://img.mustafinmag.kz/eX1X4UKNS9c/el:true/rs:fit:3840/dpr:1/f:webp/czM6Ly9tdXN0YWZpbi1tYWdhemluZS9pbWcvZjdkOWU3ZjZhNjVhOTZiZjIxMjM4YTdmNjlmNGFlMTcuanBn',
     shortDesc: 'Гранитная скала посреди озера — символ Бурабая.',
     description: 'Жумбактас (Загадочный камень) — одна из самых узнаваемых достопримечательностей парка. Скала расположена прямо в воде озера Боровое и выглядит как гигантский сфинкс. По легенде, она охраняет тайны этих мест.'
   }
