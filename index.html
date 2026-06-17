@@ -3,6 +3,8 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <!-- base href гарантирует загрузку ресурсов при любом URL вроде /place/:id -->
+  <base href="/" />
   <meta name="description" content="Eco Burabay — цифровая платформа для сохранения природы Бурабая. QR-гид, реестр деревьев, эко-патруль." />
   <title>Eco Burabay — Сканируй. Узнавай. Сохраняй.</title>
   <link rel="icon" type="image/svg+xml" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'><circle cx='32' cy='32' r='30' fill='%23166534'/><text x='32' y='44' text-anchor='middle' font-size='28' fill='white'>🌿</text></svg>" />
@@ -11,7 +13,8 @@
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Raleway:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
   <!-- QR-код библиотека -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <link rel="stylesheet" href="style.css" />
+  <!-- Абсолютные пути — работают при любом URL (/place/:id и т.д.) -->
+  <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
 
@@ -177,7 +180,7 @@
         <label for="pPlace">Сектор посадки *</label>
         <input type="text" id="pPlace" required placeholder="Зона №3 (Озеро Малое Чебачье)" />
       </div>
-      <button type="submit" class="btn btn--primary btn--full">Внести в реестр 🌲</button>
+      <button type="submit" class="btn btn--primary btn--full">Внести в реестр 🌿</button>
     </form>
   </div>
 </div>
@@ -374,6 +377,6 @@
   </div>
 </footer>
 
-<script src="script.js"></script>
+<script src="/script.js"></script>
 </body>
 </html>
