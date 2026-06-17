@@ -163,8 +163,10 @@ window.openSightModal = function(id) {
   `;
   openModal('sightModal');
 
-  // Меняем URL для шаринга
-  window.history.pushState({ sightId: id }, '', `/place/${id}`);
+  // Меняем URL только если открыли из карточки (не из роутинга)
+  if (!window.location.pathname.startsWith('/place/')) {
+    window.history.pushState({ sightId: id }, '', `/place/${id}`);
+  }
 };
 
 // ── 6. МОДАЛЬНОЕ ОКНО — QR-КОД ──────────────────────────────
@@ -265,7 +267,7 @@ function renderTrees(filter = '') {
 
   filtered.forEach((tree, i) => {
     const icons = { 'Сосна обыкновенная': '🌲', 'Берёза повислая': '🌳', 'Ель сибирская': '🎄' };
-    const icon = icons[tree.type] || '🌲';
+    const icon = icons[tree.type] || '🌿';
     const card = document.createElement('div');
     card.className = 'tree-card reveal';
     card.style.transitionDelay = `${i * 60}ms`;
@@ -275,8 +277,9 @@ function renderTrees(filter = '') {
         <strong>${tree.type}</strong>
       </div>
       <div style="margin-top:12px;font-size:0.8rem;color:#64748b;line-height:1.8;">
-        <div>👤 ${tree.planter || 'ZHTK'}</div>
+        <div>👤 ${tree.planter || 'Аноним'}</div>
         <div>📍 ${tree.place || 'Бурабай'}</div>
+        <div>📅 ${tree.date}</div>
       </div>
     `;
     grid.appendChild(card);
@@ -613,19 +616,39 @@ function initBurger() {
 // ── 16. РОУТИНГ /place/:id ───────────────────────────────────
 function handleRouting() {
   const path = window.location.pathname;
-  if (path.startsWith('/place/')) {
-    const id = path.split('/')[2];
-    // Ждём рендера карточек
-    setTimeout(() => {
-      const sight = SIGHTS.find(s => s.id === id);
-      if (sight) {
-        openSightModal(id);
-      } else {
-        showToast('Объект не найден');
-        window.history.replaceState({}, '', '/');
-      }
-    }, 600);
+  if (!path.startsWith('/place/')) return;
+
+  const id = path.split('/')[2];
+  if (!id) return;
+
+  const sight = SIGHTS.find(s => s.id === id);
+  if (!sight) {
+    showToast('Объект не найден');
+    window.history.replaceState({}, '', '/');
+    return;
   }
+
+  // Обновляем title страницы для шаринга
+  document.title = `${sight.name} — Eco Burabay`;
+
+  // Ждём: 1) DOM готов, 2) QRCode библиотека загружена, 3) карточки отрендерены
+  function tryOpen(attempts) {
+    const qrReady = typeof QRCode !== 'undefined';
+    const cardsReady = document.getElementById('sightCards')?.children.length > 0;
+
+    if (qrReady && cardsReady) {
+      // Всё готово — открываем модалку
+      openSightModal(id);
+    } else if (attempts > 0) {
+      // Повторяем каждые 150ms до 20 раз (3 секунды макс)
+      setTimeout(() => tryOpen(attempts - 1), 150);
+    } else {
+      // Крайний случай — открываем без QR
+      openSightModal(id);
+    }
+  }
+
+  tryOpen(20);
 }
 
 // Браузерная кнопка "назад"
