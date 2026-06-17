@@ -7,7 +7,7 @@
 
 // ── СИНХРОНИЗАЦИЯ С ОБЛАКОМ SUPABASE ───────────────────────
 // НАСТРОЙКА: Замените эти данные на ключи из вашего проекта Supabase (Settings -> API)
-const SUPABASE_URL = 'https://owsyrkvkyaeqqalxdqgc.supabase.co';
+const SUPABASE_URL = 'https://owsyrkvkyaeqqalxdqgc.supabase.co/rest/v1/';
 const SUPABASE_ANON_KEY = 'sb_publishable_th2MsqnMjnUHXrEyN1dZAQ_6V3x03bI';
 
 let supabaseClient = null;
