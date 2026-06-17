@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <!-- base href гарантирует загрузку ресурсов при любом URL вроде /place/:id -->
   <base href="/" />
   <meta name="description" content="Eco Burabay — цифровая платформа для сохранения природы Бурабая. QR-гид, реестр деревьев, эко-патруль." />
   <title>Eco Burabay — Сканируй. Узнавай. Сохраняй.</title>
@@ -11,17 +10,14 @@
   <link rel="preconnect" href="https://fonts.googleapis.com" />
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
   <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600;700;800;900&family=Raleway:wght@400;600;700;800;900&display=swap" rel="stylesheet" />
-  <!-- QR-код библиотека -->
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-  <!-- Абсолютные пути — работают при любом URL (/place/:id и т.д.) -->
+  
   <link rel="stylesheet" href="/style.css" />
 </head>
 <body>
 
-<!-- ══════════════════════════════════════════
-     НАВИГАЦИЯ
-══════════════════════════════════════════ -->
 <nav class="nav" id="nav">
   <div class="nav__inner">
     <a href="#home" class="nav__logo">
@@ -55,9 +51,6 @@
   </div>
 </nav>
 
-<!-- ══════════════════════════════════════════
-     HERO
-══════════════════════════════════════════ -->
 <section class="hero" id="home">
   <div class="hero__bg-image"></div>
   <div class="hero__overlay"></div>
@@ -93,15 +86,11 @@
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════
-     МОДАЛ: АВТОРИЗАЦИЯ
-══════════════════════════════════════════ -->
 <div class="modal" id="authModal">
   <div class="modal__overlay"></div>
   <div class="modal__box modal__box--sm">
     <button class="modal__close" onclick="closeAuthModal()">✕</button>
 
-    <!-- Форма входа -->
     <div id="loginFormWindow">
       <h3 class="auth-title">Вход в систему</h3>
       <form id="loginForm">
@@ -118,11 +107,10 @@
       <p class="auth-switch">Нет аккаунта? <a href="#" onclick="toggleAuthWindows(event,'reg')">Зарегистрироваться</a></p>
       <div class="auth-hint">
         💡 Администратор:<br>
-        Email: <code>admin@eco.kz</code> &nbsp;|&nbsp; Пароль: <code>admin123</code>
+        Email: <code>admin@eco.kz</code>  |  Пароль: <code>admin123</code>
       </div>
     </div>
 
-    <!-- Форма регистрации -->
     <div id="registerFormWindow" class="hidden">
       <h3 class="auth-title">Регистрация</h3>
       <form id="registerForm">
@@ -145,9 +133,6 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     МОДАЛ: ДОСТОПРИМЕЧАТЕЛЬНОСТЬ
-══════════════════════════════════════════ -->
 <div class="modal" id="sightModal">
   <div class="modal__overlay"></div>
   <div class="modal__box">
@@ -156,9 +141,6 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     МОДАЛ: ПОСАДКА ДЕРЕВА
-══════════════════════════════════════════ -->
 <div class="modal" id="plantModal">
   <div class="modal__overlay"></div>
   <div class="modal__box modal__box--sm">
@@ -186,9 +168,6 @@
   </div>
 </div>
 
-<!-- ══════════════════════════════════════════
-     АДМИН-ПАНЕЛЬ
-══════════════════════════════════════════ -->
 <section class="section admin-panel hidden" id="adminSection">
   <div class="container">
     <div class="section__head">
@@ -197,11 +176,9 @@
     </div>
 
     <div class="admin-layout">
-      <!-- Форма добавления/редактирования -->
       <div class="admin-card">
         <h3 id="adminFormTitle">➕ Добавить объект</h3>
         <form id="adminSightForm">
-          <!-- Скрытое поле для ID при редактировании -->
           <input type="hidden" id="editId" value="" />
           <div class="form-group">
             <label for="asName">Название *</label>
@@ -230,7 +207,6 @@
         </form>
       </div>
 
-      <!-- Таблица объектов с QR -->
       <div class="admin-card">
         <h3>Список объектов</h3>
         <div style="overflow-x:auto;">
@@ -250,9 +226,6 @@
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════
-     QR-ГИД
-══════════════════════════════════════════ -->
 <section class="section guide" id="guide">
   <div class="container">
     <div class="section__head reveal">
@@ -262,14 +235,10 @@
         Каждая карточка содержит QR-код. Отсканируйте — и получите полную информацию об объекте прямо на вашем телефоне.
       </p>
     </div>
-    <!-- ID = sightCards (используется в script.js) -->
     <div class="cards reveal" id="sightCards"></div>
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════
-     ЭКО-ПАТРУЛЬ (Чистый Бурабай)
-══════════════════════════════════════════ -->
 <section class="section clean" id="clean">
   <div class="container">
     <div class="clean__inner">
@@ -310,9 +279,6 @@
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════
-     РЕЕСТР ДЕРЕВЬЕВ
-══════════════════════════════════════════ -->
 <section class="section trees" id="trees">
   <div class="container">
     <div class="section__head reveal">
@@ -325,14 +291,10 @@
         <input type="text" id="treeSearch" placeholder="🔍 Поиск по имени или породе..." oninput="filterTrees()" />
       </div>
     </div>
-    <!-- ID = treeGrid (используется в script.js) -->
     <div class="tree-grid reveal" id="treeGrid"></div>
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════
-     КАРТА
-══════════════════════════════════════════ -->
 <section class="section map-section" id="map">
   <div class="container">
     <div class="section__head reveal">
@@ -344,14 +306,11 @@
         src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d155823.1557005477!2d70.07689128913988!3d53.08051770020197!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x43a825b42c656911%3A0xc3bba4d6a666ea37!2z0JHRg9GA0LDQsdCw0LksINCa0LDQt9Cw0YXRgdGC0LDQvQ!5e0!3m2!1sru!2skz!4v1700000000000!5m2!1sru!2skz"
         width="100%" height="100%" style="border:0;"
         allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
-      </iframe>
+      </table>
     </div>
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════
-     ВОЛОНТЁРЫ
-══════════════════════════════════════════ -->
 <section class="section volunteer" id="volunteer">
   <div class="container">
     <div class="volunteer__inner reveal">
@@ -369,16 +328,13 @@
   </div>
 </section>
 
-<!-- ══════════════════════════════════════════
-     ФУТЕР
-══════════════════════════════════════════ -->
 <footer class="footer">
   <div class="container">
     <p>© 2026 Eco Burabay. Разработано для защиты природы Казахстана 🌿</p>
   </div>
 </footer>
 
-  <script src="js/script.js"></script>
+  <script src="/script.js"></script>
 
 </body>
 </html>
