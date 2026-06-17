@@ -267,7 +267,7 @@ function renderTrees(filter = '') {
 
   filtered.forEach((tree, i) => {
     const icons = { 'Сосна обыкновенная': '🌲', 'Берёза повислая': '🌳', 'Ель сибирская': '🎄' };
-    const icon = icons[tree.type] || '🌿';
+    const icon = icons[tree.type] || '🌲';
     const card = document.createElement('div');
     card.className = 'tree-card reveal';
     card.style.transitionDelay = `${i * 60}ms`;
@@ -279,7 +279,7 @@ function renderTrees(filter = '') {
       <div style="margin-top:12px;font-size:0.8rem;color:#64748b;line-height:1.8;">
         <div>👤 ${tree.planter || 'Аноним'}</div>
         <div>📍 ${tree.place || 'Бурабай'}</div>
-        <div>📅 ${tree.date}</div>
+   
       </div>
     `;
     grid.appendChild(card);
