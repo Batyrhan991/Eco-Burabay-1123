@@ -1,18 +1,22 @@
 'use strict';
 
 /* =========================================================
-   ECO BURABAY — script.js (полностью исправленная версия)
-   Исправления:
-   - Все ID синхронизированы с index.html
-   - QR-коды работают по URL домена
-   - Форма деревьев исправлена (pName, pSpecies, pPlace)
-   - Единая система модальных окон (.modal / .modal.open)
-   - Анимации улучшены (stagger, counter, parallax)
-   - Бургер-меню исправлено
-   - Роутинг /place/:id работает
+   ECO BURABAY — script.js (Версия с облачной базой Supabase)
    ========================================================= */
 
-// ── 1. LOCALSTORAGE ─────────────────────────────────────────
+// ── СИНХРОНИЗАЦИЯ С ОБЛАКОМ SUPABASE ───────────────────────
+// НАСТРОЙКА: Замените эти данные на ключи из вашего проекта Supabase (Settings -> API)
+const SUPABASE_URL = 'https://owsyrkvkyaeqqalxdqgc.supabase.co/rest/v1/';
+const SUPABASE_ANON_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im93c3lya3ZreWFlcXFhbHhkcWdjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODE2ODE5NjUsImV4cCI6MjA5NzI1Nzk2NX0.njf0Y0WTFeSXWgPR4H0paB5mCclw3gScV3rOyFQi0aA';
+
+let supabaseClient = null;
+if (typeof supabase !== 'undefined') {
+  supabaseClient = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+} else {
+  console.error('Supabase CDN не подключен в index.html!');
+}
+
+// ── 1. LOCALSTORAGE (Только для локальной сессии юзера) ─────
 function getLS(key, def) {
   try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : def; }
   catch (e) { return def; }
@@ -21,15 +25,15 @@ function setLS(key, val) {
   try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {}
 }
 
-// ── 2. ДАННЫЕ ────────────────────────────────────────────────
+// ── 2. ДАННЫЕ И ДЕФОЛТНЫЕ НАСТРОЙКИ ────────────────────────
 const DEFAULT_SIGHTS = [
   {
     id: 'burabay',
     name: 'Озеро Бурабай',
     subtitle: 'Главный водоём парка',
     image: 'https://borovoe.kz/upload/medialibrary/454/454cf69f5a0ad9b5bbeba27b18d9b644.jpg',
-    shortDesc: 'Сердце национального парка — кристальное озеро среди гранитных скал.',
-    description: 'Озеро Бурабай (Боровое) — бессточное озеро в Бурабайском районе Акмолинской области Казахстана. Оно окружено величественными сосновыми лесами и причудливыми скалами. Именно здесь, вдыхая чистейший воздух и глядя на зеркальную гладь воды, понимаешь ценность природы.'
+    shortDesc: 'Сердце nationalного парка — кристальное озеро среди гранитных скал.',
+    description: 'Озеро Бурабай (Боровое) — бессточное озеро в Бурабайском районе Акмолинской области Казахстана. Оно окружено величественными сосновыми лесами и причудливыми скалами.'
   },
   {
     id: 'okzhetpes',
@@ -37,7 +41,7 @@ const DEFAULT_SIGHTS = [
     subtitle: 'Высота около 200 м',
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQk3V5RUyOVEO-SbDIzmLzxDftQsEoDcPcir5lAXspjuA&s=10',
     shortDesc: 'Величественная скала, чьё название означает «Стрела не долетит».',
-    description: 'Гранитная скала на берегу озера Боровое. Её вершина напоминает лежащего слона. Окжетпес воспета в многочисленных легендах казахского народа. С вершины открывается панорамный вид на весь Бурабай.'
+    description: 'Гранитная скала на берегу озера Боровое. Её вершина напоминает лежащего слона. Окжетпес воспета в многочисленных легендах казахского народа.'
   },
   {
     id: 'zhumbaktas',
@@ -45,7 +49,7 @@ const DEFAULT_SIGHTS = [
     subtitle: 'Загадочный камень',
     image: 'https://img.mustafinmag.kz/eX1X4UKNS9c/el:true/rs:fit:3840/dpr:1/f:webp/czM6Ly9tdXN0YWZpbi1tYWdhemluZS9pbWcvZjdkOWU3ZjZhNjVhOTZiZjIxMjM4YTdmNjlmNGFlMTcuanBn',
     shortDesc: 'Гранитная скала посреди озера — символ Бурабая.',
-    description: 'Жумбактас (Загадочный камень) — одна из самых узнаваемых достопримечательностей парка. Скала расположена прямо в воде озера Боровое и выглядит как гигантский сфинкс. По легенде, она охраняет тайны этих мест.'
+    description: 'Жумбактас (Загадочный камень) — одна из самых узнаваемых достопримечательностей парка. Скала расположена прямо в воде озера Боровое.'
   }
 ];
 
@@ -55,13 +59,34 @@ const DEFAULT_TREES = [
   { id: 't3', type: 'Ель сибирская',      place: 'Зона №3', date: '01.06.2026', planter: 'Эко-клуб' }
 ];
 
-let SIGHTS = getLS('eco_sights', DEFAULT_SIGHTS);
-let TREES  = getLS('eco_trees',  DEFAULT_TREES);
+let SIGHTS = [];
+let TREES  = [];
 let CURRENT_USER = getLS('eco_user', null);
 
-function saveData() {
-  setLS('eco_sights', SIGHTS);
-  setLS('eco_trees',  TREES);
+// Функция асинхронной загрузки данных из облака
+async function loadGlobalData() {
+  if (!supabaseClient) {
+    SIGHTS = DEFAULT_SIGHTS;
+    TREES = DEFAULT_TREES;
+    return;
+  }
+  try {
+    // Параллельно запрашиваем достопримечательности и деревья из БД
+    const [sightsResponse, treesResponse] = await Promise.all([
+      supabaseClient.from('eco_sights').select('*'),
+      supabaseClient.from('eco_trees').select('*').order('created_at', { ascending: false })
+    ]);
+
+    if (sightsResponse.error) throw sightsResponse.error;
+    if (treesResponse.error) throw treesResponse.error;
+
+    SIGHTS = sightsResponse.data.length ? sightsResponse.data : DEFAULT_SIGHTS;
+    TREES = treesResponse.data.length ? treesResponse.data : DEFAULT_TREES;
+  } catch (error) {
+    console.error('Ошибка загрузки из Supabase, применены дефолтные данные:', error);
+    SIGHTS = DEFAULT_SIGHTS;
+    TREES = DEFAULT_TREES;
+  }
 }
 
 // ── 3. СЧЁТЧИКИ С АНИМАЦИЕЙ ──────────────────────────────────
@@ -88,7 +113,7 @@ function updateCounters() {
 
 // ── 4. QR-ГИД — РЕНДЕР КАРТОЧЕК ─────────────────────────────
 function renderSights() {
-  const grid = document.getElementById('sightCards'); // ID из index.html
+  const grid = document.getElementById('sightCards');
   if (!grid) return;
   grid.innerHTML = '';
 
@@ -97,7 +122,6 @@ function renderSights() {
     card.className = 'card reveal';
     card.style.transitionDelay = `${i * 80}ms`;
 
-    // Генерируем QR прямо в карточке (маленький превью)
     const qrPlaceholder = `qr-mini-${sight.id}`;
 
     card.innerHTML = `
@@ -123,7 +147,6 @@ function renderSights() {
     `;
     grid.appendChild(card);
 
-    // Мини QR в карточке
     setTimeout(() => {
       const miniEl = document.getElementById(qrPlaceholder);
       if (miniEl && typeof QRCode !== 'undefined') {
@@ -163,7 +186,6 @@ window.openSightModal = function(id) {
   `;
   openModal('sightModal');
 
-  // Меняем URL только если открыли из карточки (не из роутинга)
   if (!window.location.pathname.startsWith('/place/')) {
     window.history.pushState({ sightId: id }, '', `/place/${id}`);
   }
@@ -174,7 +196,6 @@ window.openQrModal = function(id) {
   const sight = SIGHTS.find(s => s.id === id);
   if (!sight) return;
 
-  // Создаём модалку динамически если нет
   let modal = document.getElementById('qrModalDynamic');
   if (!modal) {
     modal = document.createElement('div');
@@ -220,7 +241,6 @@ window.closeQrDynamic = function() {
   closeModalById('qrModalDynamic');
 };
 
-// Скачивание QR как PNG
 window.downloadQR = function(id, name) {
   const canvas = document.querySelector('#qrCodeBig canvas');
   if (!canvas) { showToast('Не удалось найти QR-код'); return; }
@@ -242,7 +262,6 @@ function closeModalById(id) {
 }
 window.closeModal = function() {
   closeModalById('sightModal');
-  // Восстановить URL если зашли через /place/
   if (window.location.pathname.startsWith('/place/')) {
     window.history.pushState({}, '', '/');
   }
@@ -252,7 +271,7 @@ window.closePlantModal  = () => closeModalById('plantModal');
 
 // ── 8. РЕЕСТР ДЕРЕВЬЕВ ───────────────────────────────────────
 function renderTrees(filter = '') {
-  const grid = document.getElementById('treeGrid'); // ID из index.html
+  const grid = document.getElementById('treeGrid');
   if (!grid) return;
   grid.innerHTML = '';
 
@@ -279,7 +298,7 @@ function renderTrees(filter = '') {
       <div style="margin-top:12px;font-size:0.8rem;color:#64748b;line-height:1.8;">
         <div>👤 ${tree.planter || 'Аноним'}</div>
         <div>📍 ${tree.place || 'Бурабай'}</div>
-   
+        <div>📅 ${tree.date || ''}</div>
       </div>
     `;
     grid.appendChild(card);
@@ -294,30 +313,39 @@ window.filterTrees = function() {
 
 window.openPlantModal  = () => openModal('plantModal');
 
-// Посадка дерева — форма plantForm с полями pName, pSpecies, pPlace (из HTML)
+// Добавление дерева напрямую в Supabase, чтобы его видели ВСЕ
 function setupPlantForm() {
   const form = document.getElementById('plantForm');
   if (!form) return;
-  form.addEventListener('submit', e => {
+  form.addEventListener('submit', async (e) => {
     e.preventDefault();
     const name    = document.getElementById('pName').value.trim() || 'Эко-герой';
     const species = document.getElementById('pSpecies').value;
     const place   = document.getElementById('pPlace').value.trim() || 'Бурабай';
 
-    TREES.unshift({
+    const newTree = {
       id: 't-' + Date.now(),
       type: species,
       place,
       date: new Date().toLocaleDateString('ru-RU'),
       planter: name
-    });
+    };
 
-    saveData();
+    if (supabaseClient) {
+      showToast('🌱 Сохранение в общий реестр...');
+      const { error } = await supabaseClient.from('eco_trees').insert([newTree]);
+      if (error) {
+        showToast('❌ Ошибка отправки в облако');
+        return;
+      }
+    }
+
+    await loadGlobalData(); // Перечитываем актуальную базу
     renderTrees();
     updateCounters();
     closePlantModal();
     form.reset();
-    showToast(`🌱 Дерево «${species}» добавлено в реестр!`);
+    showToast(`🌱 Дерево «${species}» добавлено для всех участников!`);
   });
 }
 
@@ -392,7 +420,6 @@ function initAuth() {
     }
   });
 
-  // Форма входа из HTML (loginForm)
   document.getElementById('loginForm')?.addEventListener('submit', e => {
     e.preventDefault();
     const email = document.getElementById('loginEmail').value.trim();
@@ -409,7 +436,6 @@ function initAuth() {
     showToast(`👋 Добро пожаловать, ${CURRENT_USER.name}!`);
   });
 
-  // Форма регистрации
   document.getElementById('registerForm')?.addEventListener('submit', e => {
     e.preventDefault();
     const name  = document.getElementById('regName').value.trim();
@@ -423,7 +449,6 @@ function initAuth() {
 
   refreshUI();
 
-  // Переключение форм входа/регистрации
   window.toggleAuthWindows = function(e, mode) {
     e.preventDefault();
     document.getElementById('loginFormWindow')?.classList.toggle('hidden', mode !== 'login');
@@ -431,7 +456,7 @@ function initAuth() {
   };
 }
 
-// ── 12. АДМИН-ПАНЕЛЬ ─────────────────────────────────────────
+// ── 12. АДМИН-ПАНЕЛЬ С СОХРАНЕНИЕМ В ОБЛАКО ──────────────────
 function initAdmin() {
   const adminBtn     = document.getElementById('adminPanelBtn');
   const adminSection = document.getElementById('adminSection');
@@ -445,28 +470,33 @@ function initAdmin() {
     }
   });
 
-  adminForm?.addEventListener('submit', e => {
+  adminForm?.addEventListener('submit', async (e) => {
     e.preventDefault();
-    // Используем скрытое поле editId из HTML
     const editId = document.getElementById('editId').value;
     const obj = {
-      name:      document.getElementById('asName').value.trim(),
-      subtitle:  document.getElementById('asSubtitle').value.trim(),
-      image:     document.getElementById('asImg').value.trim() || DEFAULT_SIGHTS[0].image,
-      shortDesc: document.getElementById('asShortDesc').value.trim(),
+      name:        document.getElementById('asName').value.trim(),
+      subtitle:    document.getElementById('asSubtitle').value.trim(),
+      image:       document.getElementById('asImg').value.trim() || DEFAULT_SIGHTS[0].image,
+      shortDesc:   document.getElementById('asShortDesc').value.trim(),
       description: document.getElementById('asFullDesc').value.trim()
     };
 
-    if (editId) {
-      const idx = SIGHTS.findIndex(x => x.id === editId);
-      if (idx !== -1) SIGHTS[idx] = { ...SIGHTS[idx], ...obj };
-      showToast('✏️ Объект обновлён');
-    } else {
-      SIGHTS.push({ id: 'id-' + Date.now(), ...obj });
-      showToast('✅ Новый объект добавлен');
+    if (supabaseClient) {
+      showToast('🔄 Синхронизация с сервером...');
+      if (editId) {
+        // Обновление существующего объекта у всех
+        const { error } = await supabaseClient.from('eco_sights').update(obj).eq('id', editId);
+        if (error) { showToast('❌ Ошибка изменения'); return; }
+        showToast('✏️ Объект обновлён глобально!');
+      } else {
+        // Создание нового объекта для всех
+        const { error } = await supabaseClient.from('eco_sights').insert([{ id: 'id-' + Date.now(), ...obj }]);
+        if (error) { showToast('❌ Ошибка добавления'); return; }
+        showToast('✅ Новый объект добавлен для всех!');
+      }
     }
 
-    saveData();
+    await loadGlobalData();
     resetAdminForm();
     renderSights();
     renderAdminTable();
@@ -481,7 +511,6 @@ function initAdmin() {
 }
 
 function renderAdminTable() {
-  // В HTML таблица имеет id adminSightsTableBody
   const tbody = document.getElementById('adminSightsTableBody');
   if (!tbody) return;
   tbody.innerHTML = '';
@@ -513,24 +542,30 @@ function renderAdminTable() {
 window.adminEdit = function(id) {
   const s = SIGHTS.find(x => x.id === id);
   if (!s) return;
-  document.getElementById('editId').value    = s.id;
-  document.getElementById('asName').value    = s.name;
+  document.getElementById('editId').value     = s.id;
+  document.getElementById('asName').value     = s.name;
   document.getElementById('asSubtitle').value = s.subtitle;
-  document.getElementById('asImg').value     = s.image;
+  document.getElementById('asImg').value      = s.image;
   document.getElementById('asShortDesc').value = s.shortDesc;
   document.getElementById('asFullDesc').value  = s.description || '';
   document.getElementById('adminFormTitle').textContent = '✏️ Редактировать объект';
   document.getElementById('adminSection')?.scrollIntoView({ behavior: 'smooth' });
 };
 
-window.adminDelete = function(id) {
-  if (!confirm('Удалить этот объект?')) return;
-  SIGHTS = SIGHTS.filter(x => x.id !== id);
-  saveData();
+window.adminDelete = async function(id) {
+  if (!confirm('Удалить этот объект для всех пользователей?')) return;
+  
+  if (supabaseClient) {
+    showToast('🗑️ Удаление с сервера...');
+    const { error } = await supabaseClient.from('eco_sights').delete().eq('id', id);
+    if (error) { showToast('❌ Ошибка при удалении'); return; }
+  }
+
+  await loadGlobalData();
   renderSights();
   renderAdminTable();
   updateCounters();
-  showToast('🗑️ Объект удалён');
+  showToast('🗑️ Объект успешно удалён!');
 };
 
 // ── 13. SCROLL REVEAL АНИМАЦИИ ───────────────────────────────
@@ -547,7 +582,6 @@ function initReveal() {
   document.querySelectorAll('.reveal:not(.active)').forEach(el => obs.observe(el));
 }
 
-// Параллакс для hero
 function initParallax() {
   const hero = document.querySelector('.hero__bg-image');
   if (!hero) return;
@@ -581,8 +615,6 @@ function showToast(msg) {
     setTimeout(() => toast.remove(), 500);
   }, 3200);
 }
-
-// Экспортируем для inline использования
 window.showToast = showToast;
 
 // ── 15. БУРГЕР-МЕНЮ ──────────────────────────────────────────
@@ -596,7 +628,6 @@ function initBurger() {
     navLinks.classList.toggle('open');
   });
 
-  // Закрываем меню при клике на ссылку
   navLinks.querySelectorAll('a').forEach(link => {
     link.addEventListener('click', () => {
       burger.classList.remove('open');
@@ -604,7 +635,6 @@ function initBurger() {
     });
   });
 
-  // Закрываем по клику вне меню
   document.addEventListener('click', (e) => {
     if (!navLinks.contains(e.target) && !burger.contains(e.target)) {
       burger.classList.remove('open');
@@ -628,39 +658,37 @@ function handleRouting() {
     return;
   }
 
-  // Обновляем title страницы для шаринга
   document.title = `${sight.name} — Eco Burabay`;
 
-  // Ждём: 1) DOM готов, 2) QRCode библиотека загружена, 3) карточки отрендерены
   function tryOpen(attempts) {
     const qrReady = typeof QRCode !== 'undefined';
     const cardsReady = document.getElementById('sightCards')?.children.length > 0;
 
     if (qrReady && cardsReady) {
-      // Всё готово — открываем модалку
       openSightModal(id);
     } else if (attempts > 0) {
-      // Повторяем каждые 150ms до 20 раз (3 секунды макс)
       setTimeout(() => tryOpen(attempts - 1), 150);
     } else {
-      // Крайний случай — открываем без QR
       openSightModal(id);
     }
   }
-
   tryOpen(20);
 }
 
-// Браузерная кнопка "назад"
 window.addEventListener('popstate', () => {
   if (!window.location.pathname.startsWith('/place/')) {
     closeModalById('sightModal');
   }
 });
 
-// ── 17. СТАРТ ────────────────────────────────────────────────
-document.addEventListener('DOMContentLoaded', () => {
-  // Закрытие модалок по overlay
+// ── 17. СТАРТ ПРИЛОЖЕНИЯ ПРИ ЗАГРУЗКЕ СТРАНИЦЫ ───────────────
+document.addEventListener('DOMContentLoaded', async () => {
+  
+  // 1. Сначала подтягиваем данные из глобального облака
+  showToast('🔄 Загрузка данных эко-парка...');
+  await loadGlobalData();
+
+  // 2. Инициализируем весь интерфейс
   document.querySelectorAll('.modal').forEach(m => {
     m.querySelector('.modal__overlay')?.addEventListener('click', () => {
       m.classList.remove('open');
