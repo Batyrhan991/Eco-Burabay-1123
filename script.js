@@ -1,423 +1,663 @@
 'use strict';
 
-// Безопасное чтение из localStorage (чтобы система не ломалась от багов кэша браузера)
-function getStorageItem(key, defaultValue) {
-  try {
-    const item = localStorage.getItem(key);
-    return item ? JSON.parse(item) : defaultValue;
-  } catch (e) {
-    return defaultValue;
-  }
+/* =========================================================
+   ECO BURABAY — script.js (полностью исправленная версия)
+   Исправления:
+   - Все ID синхронизированы с index.html
+   - QR-коды работают по URL домена
+   - Форма деревьев исправлена (pName, pSpecies, pPlace)
+   - Единая система модальных окон (.modal / .modal.open)
+   - Анимации улучшены (stagger, counter, parallax)
+   - Бургер-меню исправлено
+   - Роутинг /place/:id работает
+   ========================================================= */
+
+// ── 1. LOCALSTORAGE ─────────────────────────────────────────
+function getLS(key, def) {
+  try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : def; }
+  catch (e) { return def; }
+}
+function setLS(key, val) {
+  try { localStorage.setItem(key, JSON.stringify(val)); } catch (e) {}
 }
 
+// ── 2. ДАННЫЕ ────────────────────────────────────────────────
 const DEFAULT_SIGHTS = [
-  { id: 'burabay', name: 'Озеро Бурабай', subtitle: 'Главный водоём парка', image: 'https://images.unsplash.com/photo-1627564547012-6eb6dc355bfa?auto=format&fit=crop&w=800&q=80', shortDesc: 'Сердце национального парка — кристальное озеро среди гранитных скал.', description: 'Озеро Бурабай (Боровое) — бессточное озеро в Бурабайском районе Акмолинской области Казахстана.' },
-  { id: 'okzhetpes', name: 'Скала Окжетпес', subtitle: 'Высота около 200 м', image: 'https://images.unsplash.com/photo-1589405858862-2ac9cbb41321?auto=format&fit=crop&w=800&q=80', shortDesc: 'Величественная скала, чье название означает "Стрела не долетит".', description: 'Гранитная скала на берегу одноименного озера, овеянная десятками народных легенд.' }
+  {
+    id: 'burabay',
+    name: 'Озеро Бурабай',
+    subtitle: 'Главный водоём парка',
+    image: 'https://images.unsplash.com/photo-1627564547012-6eb6dc355bfa?auto=format&fit=crop&w=800&q=80',
+    shortDesc: 'Сердце национального парка — кристальное озеро среди гранитных скал.',
+    description: 'Озеро Бурабай (Боровое) — бессточное озеро в Бурабайском районе Акмолинской области Казахстана. Оно окружено величественными сосновыми лесами и причудливыми скалами. Именно здесь, вдыхая чистейший воздух и глядя на зеркальную гладь воды, понимаешь ценность природы.'
+  },
+  {
+    id: 'okzhetpes',
+    name: 'Скала Окжетпес',
+    subtitle: 'Высота около 200 м',
+    image: 'https://images.unsplash.com/photo-1589405858862-2ac9cbb41321?auto=format&fit=crop&w=800&q=80',
+    shortDesc: 'Величественная скала, чьё название означает «Стрела не долетит».',
+    description: 'Гранитная скала на берегу озера Боровое. Её вершина напоминает лежащего слона. Окжетпес воспета в многочисленных легендах казахского народа. С вершины открывается панорамный вид на весь Бурабай.'
+  },
+  {
+    id: 'zhumbaktas',
+    name: 'Скала Жумбактас',
+    subtitle: 'Загадочный камень',
+    image: 'https://images.unsplash.com/photo-1501854140801-50d01698950b?auto=format&fit=crop&w=800&q=80',
+    shortDesc: 'Гранитная скала посреди озера — символ Бурабая.',
+    description: 'Жумбактас (Загадочный камень) — одна из самых узнаваемых достопримечательностей парка. Скала расположена прямо в воде озера Боровое и выглядит как гигантский сфинкс. По легенде, она охраняет тайны этих мест.'
+  }
 ];
 
 const DEFAULT_TREES = [
-  { id: 1, name: 'Батырхан', species: 'Сосна обыкновенная', place: 'Сектор А-1' },
-  { id: 2, name: 'Алина М.', species: 'Ель сибирская', place: 'Возле поляны Абылай Хана' },
-  { id: 3, name: 'EcoCompany', species: 'Берёза повислая', place: 'Южный склон' }
+  { id: 't1', type: 'Сосна обыкновенная', place: 'Зона №1', date: '12.05.2026', planter: 'Алексей М.' },
+  { id: 't2', type: 'Берёза повислая',    place: 'Зона №2', date: '24.05.2026', planter: 'Индира Б.' },
+  { id: 't3', type: 'Ель сибирская',      place: 'Зона №3', date: '01.06.2026', planter: 'Эко-клуб' }
 ];
 
-let SIGHTS = getStorageItem('eco_sights', DEFAULT_SIGHTS);
-let TREES_DATA = getStorageItem('eco_trees', DEFAULT_TREES);
-let CURRENT_USER = getStorageItem('eco_current_user', null);
-let REPORT_COUNT = parseInt(localStorage.getItem('eco_reports_count')) || 2;
+let SIGHTS = getLS('eco_sights', DEFAULT_SIGHTS);
+let TREES  = getLS('eco_trees',  DEFAULT_TREES);
+let CURRENT_USER = getLS('eco_user', null);
 
-function saveAllData() {
-  localStorage.setItem('eco_sights', JSON.stringify(SIGHTS));
-  localStorage.setItem('eco_trees', JSON.stringify(TREES_DATA));
-  localStorage.setItem('eco_reports_count', REPORT_COUNT);
+function saveData() {
+  setLS('eco_sights', SIGHTS);
+  setLS('eco_trees',  TREES);
 }
 
-// ===== УМНЫЕ СЧЕТЧИКИ =====
-function updateLiveCounters() {
-  if (document.getElementById('liveTreeCount')) document.getElementById('liveTreeCount').textContent = TREES_DATA.length;
-  if (document.getElementById('liveSightCount')) document.getElementById('liveSightCount').textContent = SIGHTS.length;
-  if (document.getElementById('liveReportCount')) document.getElementById('liveReportCount').textContent = REPORT_COUNT;
+// ── 3. СЧЁТЧИКИ С АНИМАЦИЕЙ ──────────────────────────────────
+function animateCounter(el, target, duration = 1200) {
+  let start = 0;
+  const step = target / (duration / 16);
+  const tick = () => {
+    start = Math.min(start + step, target);
+    el.textContent = Math.floor(start);
+    if (start < target) requestAnimationFrame(tick);
+  };
+  requestAnimationFrame(tick);
 }
 
-// ===== СИСТЕМА ВХОДА (ТЕПЕРЬ РАБОТАЕТ) =====
-function initAuthSystem() {
+function updateCounters() {
+  const tEl = document.getElementById('liveTreeCount');
+  const sEl = document.getElementById('liveSightCount');
+  const rEl = document.getElementById('liveReportCount');
+  const reports = getLS('eco_reports', []);
+  if (tEl) animateCounter(tEl, TREES.length);
+  if (sEl) animateCounter(sEl, SIGHTS.length);
+  if (rEl) animateCounter(rEl, reports.length + 2);
+}
+
+// ── 4. QR-ГИД — РЕНДЕР КАРТОЧЕК ─────────────────────────────
+function renderSights() {
+  const grid = document.getElementById('sightCards'); // ID из index.html
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  SIGHTS.forEach((sight, i) => {
+    const card = document.createElement('div');
+    card.className = 'card reveal';
+    card.style.transitionDelay = `${i * 80}ms`;
+
+    // Генерируем QR прямо в карточке (маленький превью)
+    const qrPlaceholder = `qr-mini-${sight.id}`;
+
+    card.innerHTML = `
+      <div class="card__img">
+        <img src="${sight.image}" alt="${sight.name}" loading="lazy"
+             onerror="this.src='https://images.unsplash.com/photo-1627564547012-6eb6dc355bfa?auto=format&fit=crop&w=800&q=80'">
+      </div>
+      <div class="card__body">
+        <h3 class="card__title">${sight.name}</h3>
+        <p class="card__desc">${sight.shortDesc}</p>
+        <div class="card__qr">
+          <div id="${qrPlaceholder}" class="card__qr-img"></div>
+          <div class="card__qr-text">
+            <strong>QR-код объекта</strong><br>
+            Сканируйте для просмотра
+          </div>
+        </div>
+        <div style="display:flex; gap:10px; margin-top:15px;">
+          <button class="btn btn--primary" style="flex:1; padding:10px;" onclick="openSightModal('${sight.id}')">Подробнее</button>
+          <button class="btn btn--outline" style="color:var(--slate); border-color:var(--slate); padding:10px 14px;" onclick="openQrModal('${sight.id}')">🔲 QR</button>
+        </div>
+      </div>
+    `;
+    grid.appendChild(card);
+
+    // Мини QR в карточке
+    setTimeout(() => {
+      const miniEl = document.getElementById(qrPlaceholder);
+      if (miniEl && typeof QRCode !== 'undefined') {
+        new QRCode(miniEl, {
+          text: `${window.location.origin}/place/${sight.id}`,
+          width: 56, height: 56,
+          colorDark: '#166534', colorLight: '#ffffff'
+        });
+      }
+    }, 200 + i * 100);
+  });
+
+  initReveal();
+}
+
+// ── 5. МОДАЛЬНОЕ ОКНО — ДОСТОПРИМЕЧАТЕЛЬНОСТЬ ────────────────
+window.openSightModal = function(id) {
+  const sight = SIGHTS.find(s => s.id === id);
+  if (!sight) return;
+
+  const modal = document.getElementById('sightModal');
+  const content = document.getElementById('modalContent');
+  if (!modal || !content) return;
+
+  content.innerHTML = `
+    <img src="${sight.image}" alt="${sight.name}"
+         style="width:100%;height:260px;object-fit:cover;border-radius:12px;margin-bottom:20px;"
+         onerror="this.style.display='none'">
+    <span class="section__eyebrow">${sight.subtitle}</span>
+    <h2 style="margin:10px 0 16px;">${sight.name}</h2>
+    <p style="color:#475569;line-height:1.7;">${sight.description || sight.shortDesc}</p>
+    <div style="margin-top:24px;display:flex;gap:12px;">
+      <button class="btn btn--primary" onclick="openQrModal('${sight.id}'); closeModal();">
+        🔲 Получить QR-код
+      </button>
+    </div>
+  `;
+  openModal('sightModal');
+
+  // Меняем URL для шаринга
+  window.history.pushState({ sightId: id }, '', `/place/${id}`);
+};
+
+// ── 6. МОДАЛЬНОЕ ОКНО — QR-КОД ──────────────────────────────
+window.openQrModal = function(id) {
+  const sight = SIGHTS.find(s => s.id === id);
+  if (!sight) return;
+
+  // Создаём модалку динамически если нет
+  let modal = document.getElementById('qrModalDynamic');
+  if (!modal) {
+    modal = document.createElement('div');
+    modal.id = 'qrModalDynamic';
+    modal.className = 'modal';
+    modal.innerHTML = `
+      <div class="modal__overlay" onclick="closeQrDynamic()"></div>
+      <div class="modal__box modal__box--sm" style="text-align:center;">
+        <button class="modal__close" onclick="closeQrDynamic()">✕</button>
+        <div id="qrModalBody"></div>
+      </div>
+    `;
+    document.body.appendChild(modal);
+  }
+
+  const fullUrl = `${window.location.origin}/place/${id}`;
+  document.getElementById('qrModalBody').innerHTML = `
+    <h3 style="margin-bottom:8px;">QR-код объекта</h3>
+    <p style="color:#64748b;font-size:0.85rem;margin-bottom:20px;">${sight.name}</p>
+    <div id="qrCodeBig" style="display:inline-block;padding:16px;background:white;border-radius:12px;border:2px solid #e2e8f0;"></div>
+    <p style="margin-top:16px;font-size:0.8rem;color:#64748b;word-break:break-all;">${fullUrl}</p>
+    <button class="btn btn--primary" style="margin-top:16px;" onclick="downloadQR('${id}','${sight.name}')">
+      ⬇ Скачать QR-код
+    </button>
+  `;
+
+  openModal('qrModalDynamic');
+
+  setTimeout(() => {
+    const el = document.getElementById('qrCodeBig');
+    if (el && typeof QRCode !== 'undefined') {
+      el.innerHTML = '';
+      new QRCode(el, {
+        text: fullUrl,
+        width: 200, height: 200,
+        colorDark: '#166534', colorLight: '#ffffff'
+      });
+    }
+  }, 50);
+};
+
+window.closeQrDynamic = function() {
+  closeModalById('qrModalDynamic');
+};
+
+// Скачивание QR как PNG
+window.downloadQR = function(id, name) {
+  const canvas = document.querySelector('#qrCodeBig canvas');
+  if (!canvas) { showToast('Не удалось найти QR-код'); return; }
+  const link = document.createElement('a');
+  link.download = `qr-${id}.png`;
+  link.href = canvas.toDataURL();
+  link.click();
+  showToast('QR-код скачан!');
+};
+
+// ── 7. ЕДИНАЯ СИСТЕМА МОДАЛЬНЫХ ОКОН ────────────────────────
+function openModal(id) {
+  const m = document.getElementById(id);
+  if (m) { m.classList.add('open'); document.body.style.overflow = 'hidden'; }
+}
+function closeModalById(id) {
+  const m = document.getElementById(id);
+  if (m) { m.classList.remove('open'); document.body.style.overflow = ''; }
+}
+window.closeModal = function() {
+  closeModalById('sightModal');
+  // Восстановить URL если зашли через /place/
+  if (window.location.pathname.startsWith('/place/')) {
+    window.history.pushState({}, '', '/');
+  }
+};
+window.closeAuthModal   = () => closeModalById('authModal');
+window.closePlantModal  = () => closeModalById('plantModal');
+
+// ── 8. РЕЕСТР ДЕРЕВЬЕВ ───────────────────────────────────────
+function renderTrees(filter = '') {
+  const grid = document.getElementById('treeGrid'); // ID из index.html
+  if (!grid) return;
+  grid.innerHTML = '';
+
+  const filtered = filter
+    ? TREES.filter(t => t.planter.toLowerCase().includes(filter.toLowerCase()) || t.type.toLowerCase().includes(filter.toLowerCase()))
+    : TREES;
+
+  if (!filtered.length) {
+    grid.innerHTML = '<p style="color:#64748b;grid-column:1/-1;text-align:center;padding:40px 0;">Деревья не найдены</p>';
+    return;
+  }
+
+  filtered.forEach((tree, i) => {
+    const icons = { 'Сосна обыкновенная': '🌲', 'Берёза повислая': '🌳', 'Ель сибирская': '🎄' };
+    const icon = icons[tree.type] || '🌲';
+    const card = document.createElement('div');
+    card.className = 'tree-card reveal';
+    card.style.transitionDelay = `${i * 60}ms`;
+    card.innerHTML = `
+      <div class="tree-card__header">
+        <div style="font-size:2rem;">${icon}</div>
+        <strong>${tree.type}</strong>
+      </div>
+      <div style="margin-top:12px;font-size:0.8rem;color:#64748b;line-height:1.8;">
+        <div>👤 ${tree.planter || 'ZHTK'}</div>
+        <div>📍 ${tree.place || 'Бурабай'}</div>
+      </div>
+    `;
+    grid.appendChild(card);
+  });
+  initReveal();
+}
+
+window.filterTrees = function() {
+  const val = document.getElementById('treeSearch')?.value || '';
+  renderTrees(val);
+};
+
+window.openPlantModal  = () => openModal('plantModal');
+
+// Посадка дерева — форма plantForm с полями pName, pSpecies, pPlace (из HTML)
+function setupPlantForm() {
+  const form = document.getElementById('plantForm');
+  if (!form) return;
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const name    = document.getElementById('pName').value.trim() || 'Эко-герой';
+    const species = document.getElementById('pSpecies').value;
+    const place   = document.getElementById('pPlace').value.trim() || 'Бурабай';
+
+    TREES.unshift({
+      id: 't-' + Date.now(),
+      type: species,
+      place,
+      date: new Date().toLocaleDateString('ru-RU'),
+      planter: name
+    });
+
+    saveData();
+    renderTrees();
+    updateCounters();
+    closePlantModal();
+    form.reset();
+    showToast(`🌱 Дерево «${species}» добавлено в реестр!`);
+  });
+}
+
+// ── 9. ФОРМА ВОЛОНТЁРА ───────────────────────────────────────
+function setupVolForm() {
+  const form = document.getElementById('volForm');
+  if (!form) return;
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    form.classList.add('hidden');
+    document.getElementById('volSuccess')?.classList.remove('hidden');
+    showToast('🎉 Заявка волонтёра принята!');
+  });
+}
+
+// ── 10. ФОРМА ЭКО-ПАТРУЛЯ ───────────────────────────────────
+function setupCleanForm() {
+  const form = document.getElementById('cleanForm');
+  if (!form) return;
+  form.addEventListener('submit', e => {
+    e.preventDefault();
+    const reports = getLS('eco_reports', []);
+    reports.push({
+      location: document.getElementById('cfLocation')?.value,
+      desc: document.getElementById('cfDesc')?.value,
+      date: new Date().toLocaleDateString('ru-RU')
+    });
+    setLS('eco_reports', reports);
+
+    form.classList.add('hidden');
+    document.getElementById('cleanSuccess')?.classList.remove('hidden');
+    updateCounters();
+    showToast('✅ Эко-заявка зарегистрирована!');
+  });
+}
+
+window.resetCleanForm = function() {
+  document.getElementById('cleanForm')?.classList.remove('hidden');
+  document.getElementById('cleanSuccess')?.classList.add('hidden');
+  document.getElementById('cleanForm')?.reset();
+};
+
+// ── 11. АВТОРИЗАЦИЯ ──────────────────────────────────────────
+function initAuth() {
   const authBtn = document.getElementById('authBtn');
-  const authModal = document.getElementById('authModal');
-  const adminPanelBtn = document.getElementById('adminPanelBtn');
-  const adminSection = document.getElementById('adminSection');
-
-  if (!authBtn) return;
+  const adminBtn = document.getElementById('adminPanelBtn');
 
   function refreshUI() {
-    if (CURRENT_USER && CURRENT_USER.name) {
-      authBtn.textContent = `Выйти (${CURRENT_USER.name})`;
-      authBtn.style.background = '#dc2626'; // Красный цвет кнопки выхода
-      if (CURRENT_USER.role === 'admin' && adminPanelBtn) {
-        adminPanelBtn.classList.remove('hidden');
+    if (CURRENT_USER) {
+      if (authBtn) authBtn.textContent = `Выйти (${CURRENT_USER.name.split(' ')[0]})`;
+      if (CURRENT_USER.role === 'admin') {
+        adminBtn?.classList.remove('hidden');
       } else {
-        if (adminPanelBtn) adminPanelBtn.classList.add('hidden');
-        if (adminSection) adminSection.classList.add('hidden');
+        adminBtn?.classList.add('hidden');
+        document.getElementById('adminSection')?.classList.add('hidden');
       }
     } else {
-      authBtn.textContent = 'Войти';
-      authBtn.style.background = ''; // Возвращаем зеленый
-      if (adminPanelBtn) adminPanelBtn.classList.add('hidden');
-      if (adminSection) adminSection.classList.add('hidden');
+      if (authBtn) authBtn.textContent = 'Войти';
+      adminBtn?.classList.add('hidden');
+      document.getElementById('adminSection')?.classList.add('hidden');
     }
   }
 
-  // Логика нажатия на кнопку Войти/Выйти
-  authBtn.addEventListener('click', () => {
+  authBtn?.addEventListener('click', () => {
     if (CURRENT_USER) {
       CURRENT_USER = null;
-      localStorage.removeItem('eco_current_user');
+      localStorage.removeItem('eco_user');
       refreshUI();
-      showNotification('Вы успешно вышли из системы');
+      showToast('Вы вышли из системы');
     } else {
-      authModal.classList.add('open');
-      document.getElementById('loginForm').reset();
+      openModal('authModal');
     }
   });
 
-  // Логин форма
-  document.getElementById('loginForm')?.addEventListener('submit', (e) => {
+  // Форма входа из HTML (loginForm)
+  document.getElementById('loginForm')?.addEventListener('submit', e => {
     e.preventDefault();
     const email = document.getElementById('loginEmail').value.trim();
-    const pass = document.getElementById('loginPassword').value;
+    const pass  = document.getElementById('loginPassword').value;
 
     if (email === 'admin@eco.kz' && pass === 'admin123') {
       CURRENT_USER = { name: 'Администратор', email, role: 'admin' };
     } else {
       CURRENT_USER = { name: email.split('@')[0], email, role: 'user' };
     }
-    
-    localStorage.setItem('eco_current_user', JSON.stringify(CURRENT_USER));
+    setLS('eco_user', CURRENT_USER);
     refreshUI();
     closeAuthModal();
-    showNotification(`Добро пожаловать, ${CURRENT_USER.name}!`);
+    showToast(`👋 Добро пожаловать, ${CURRENT_USER.name}!`);
   });
 
   // Форма регистрации
-  document.getElementById('registerForm')?.addEventListener('submit', (e) => {
+  document.getElementById('registerForm')?.addEventListener('submit', e => {
     e.preventDefault();
-    const name = document.getElementById('regName').value.trim();
+    const name  = document.getElementById('regName').value.trim();
     const email = document.getElementById('regEmail').value.trim();
-    
     CURRENT_USER = { name, email, role: 'user' };
-    localStorage.setItem('eco_current_user', JSON.stringify(CURRENT_USER));
+    setLS('eco_user', CURRENT_USER);
     refreshUI();
     closeAuthModal();
-    showNotification('Успешная регистрация!');
+    showToast(`🎉 Аккаунт создан, ${name}!`);
   });
-
-  if (adminPanelBtn) {
-    adminPanelBtn.addEventListener('click', () => {
-      if (adminSection) {
-        adminSection.classList.toggle('hidden');
-        if (!adminSection.classList.contains('hidden')) {
-          adminSection.scrollIntoView({ behavior: 'smooth' });
-        }
-      }
-    });
-  }
 
   refreshUI();
+
+  // Переключение форм входа/регистрации
+  window.toggleAuthWindows = function(e, mode) {
+    e.preventDefault();
+    document.getElementById('loginFormWindow')?.classList.toggle('hidden', mode !== 'login');
+    document.getElementById('registerFormWindow')?.classList.toggle('hidden', mode !== 'reg');
+  };
 }
 
-window.closeAuthModal = function() {
-  document.getElementById('authModal').classList.remove('open');
-};
+// ── 12. АДМИН-ПАНЕЛЬ ─────────────────────────────────────────
+function initAdmin() {
+  const adminBtn     = document.getElementById('adminPanelBtn');
+  const adminSection = document.getElementById('adminSection');
+  const adminForm    = document.getElementById('adminSightForm');
 
-window.toggleAuthWindows = function(e, type) {
-  e.preventDefault();
-  const loginWin = document.getElementById('loginFormWindow');
-  const regWin = document.getElementById('registerFormWindow');
-  
-  if (type === 'reg') {
-    loginWin.classList.add('hidden');
-    regWin.classList.remove('hidden');
-  } else {
-    regWin.classList.add('hidden');
-    loginWin.classList.remove('hidden');
-  }
-};
-
-// ===== ГЕНЕРАЦИЯ QR ГИДА =====
-function renderSights() {
-  const container = document.getElementById('sightCards');
-  if (!container) return;
-
-  container.innerHTML = SIGHTS.map(s => `
-    <div class="card" onclick="openSightModal('${s.id}')">
-      <div class="card__img">
-        <img src="${s.image}" alt="${s.name}"/>
-      </div>
-      <div class="card__body">
-        <h3 class="card__title">${s.name}</h3>
-        <p class="card__desc">${s.shortDesc}</p>
-        <div class="card__qr">
-          <div class="card__qr-img" id="main-qr-${s.id}"></div>
-          <div class="card__qr-text"><strong>Eco QR Код</strong>Сканируй на месте</div>
-        </div>
-      </div>
-    </div>
-  `).join('');
-
-  SIGHTS.forEach(s => {
-    const box = document.getElementById(`main-qr-${s.id}`);
-    if (box && typeof QRCode !== 'undefined') {
-      new QRCode(box, { text: `https://eco-burabay.kz/place/${s.id}`, width: 60, height: 60, colorDark: "#166534" });
+  adminBtn?.addEventListener('click', () => {
+    adminSection?.classList.toggle('hidden');
+    if (!adminSection?.classList.contains('hidden')) {
+      adminSection.scrollIntoView({ behavior: 'smooth' });
+      renderAdminTable();
     }
   });
-}
 
-window.openSightModal = function(id) {
-  const s = SIGHTS.find(x => x.id === id);
-  if (!s) return;
-  const content = document.getElementById('modalContent');
-  if (content) {
-    content.innerHTML = `
-      <div style="margin-bottom:20px; border-radius:12px; overflow:hidden; height:200px;">
-         <img src="${s.image}" style="width:100%; height:100%; object-fit:cover;" />
-      </div>
-      <h2 style="margin-bottom:8px;">${s.name}</h2>
-      <p style="color:#166534; font-weight:600; margin-bottom:1rem;">${s.subtitle}</p>
-      <p style="line-height:1.6; color:#475569;">${s.description}</p>
-    `;
-    document.getElementById('sightModal').classList.add('open');
-  }
-};
-
-window.closeModal = function() {
-  document.getElementById('sightModal').classList.remove('open');
-};
-
-// ===== АДМИНКА =====
-function initAdminLogic() {
-  const tbody = document.getElementById('adminSightsTableBody');
-  const form = document.getElementById('adminSightForm');
-  if (!tbody || !form) return;
-
-  function updateAdminTable() {
-    tbody.innerHTML = SIGHTS.map(s => `
-      <tr>
-        <td><strong>${s.name}</strong></td>
-        <td><div id="adm-qr-${s.id}"></div></td>
-        <td style="white-space: nowrap;">
-          <button type="button" class="btn-action" onclick="prepareEditSight('${s.id}')">✏️</button>
-          <button type="button" class="btn-action btn-action--delete" onclick="removeSight('${s.id}')">🗑️</button>
-        </td>
-      </tr>
-    `).join('');
-
-    SIGHTS.forEach(s => {
-      const box = document.getElementById(`adm-qr-${s.id}`);
-      if (box && typeof QRCode !== 'undefined') {
-        new QRCode(box, { text: `https://eco-burabay.kz/place/${s.id}`, width: 35, height: 35 });
-      }
-    });
-  }
-
-  form.addEventListener('submit', (e) => {
+  adminForm?.addEventListener('submit', e => {
     e.preventDefault();
+    // Используем скрытое поле editId из HTML
     const editId = document.getElementById('editId').value;
-    const name = document.getElementById('asName').value.trim();
-    const subtitle = document.getElementById('asSubtitle').value.trim();
-    const image = document.getElementById('asImg').value.trim();
-    const shortDesc = document.getElementById('asShortDesc').value.trim();
-    const description = document.getElementById('asFullDesc').value.trim();
+    const obj = {
+      name:      document.getElementById('asName').value.trim(),
+      subtitle:  document.getElementById('asSubtitle').value.trim(),
+      image:     document.getElementById('asImg').value.trim() || DEFAULT_SIGHTS[0].image,
+      shortDesc: document.getElementById('asShortDesc').value.trim(),
+      description: document.getElementById('asFullDesc').value.trim()
+    };
 
     if (editId) {
-      const i = SIGHTS.findIndex(x => x.id === editId);
-      if (i !== -1) SIGHTS[i] = { ...SIGHTS[i], name, subtitle, image, shortDesc, description };
-      showNotification('Объект успешно обновлен');
+      const idx = SIGHTS.findIndex(x => x.id === editId);
+      if (idx !== -1) SIGHTS[idx] = { ...SIGHTS[idx], ...obj };
+      showToast('✏️ Объект обновлён');
     } else {
-      SIGHTS.push({ id: 'id-' + Date.now(), name, subtitle, image, shortDesc, description });
-      showNotification('Новый объект добавлен');
+      SIGHTS.push({ id: 'id-' + Date.now(), ...obj });
+      showToast('✅ Новый объект добавлен');
     }
 
-    saveAllData();
+    saveData();
     resetAdminForm();
     renderSights();
-    updateAdminTable();
-    updateLiveCounters();
+    renderAdminTable();
+    updateCounters();
   });
 
-  window.prepareEditSight = function(id) {
-    const s = SIGHTS.find(x => x.id === id);
-    if (!s) return;
-    document.getElementById('editId').value = s.id;
-    document.getElementById('asName').value = s.name;
-    document.getElementById('asSubtitle').value = s.subtitle;
-    document.getElementById('asImg').value = s.image;
-    document.getElementById('asShortDesc').value = s.shortDesc;
-    document.getElementById('asFullDesc').value = s.description;
-    document.getElementById('cancelEditBtn').style.display = 'inline-block';
-    form.scrollIntoView({ behavior: 'smooth', block: 'center' });
-  };
-
-  window.removeSight = function(id) {
-    if (confirm('Вы уверены, что хотите удалить объект?')) {
-      SIGHTS = SIGHTS.filter(x => x.id !== id);
-      saveAllData();
-      renderSights();
-      updateAdminTable();
-      updateLiveCounters();
-      showNotification('Объект удален');
-    }
-  };
-
   window.resetAdminForm = function() {
-    form.reset();
-    document.getElementById('editId').value = '';
-    document.getElementById('cancelEditBtn').style.display = 'none';
+    adminForm?.reset();
+    if (document.getElementById('editId')) document.getElementById('editId').value = '';
+    document.getElementById('adminFormTitle').textContent = 'Добавить / Изменить объект';
   };
-
-  updateAdminTable();
 }
 
-// ===== РЕЕСТР ДЕРЕВЬЕВ =====
-function renderTrees() {
-  const grid = document.getElementById('treeGrid');
-  if (!grid) return;
-  grid.innerHTML = TREES_DATA.map(t => `
-    <div class="tree-card">
-      <div class="tree-card__header"><strong>${t.name}</strong></div>
-      <div style="font-size:2.5rem; text-align:center; margin: 0.5rem 0;">🌲</div>
-      <div style="font-size:0.85rem; color:#4b5563; text-align:center;">
-        <div>${t.species}</div>
-        <div style="margin-top:0.25rem; font-style:italic;">📍 ${t.place}</div>
-      </div>
-    </div>
-  `).join('');
+function renderAdminTable() {
+  // В HTML таблица имеет id adminSightsTableBody
+  const tbody = document.getElementById('adminSightsTableBody');
+  if (!tbody) return;
+  tbody.innerHTML = '';
+
+  SIGHTS.forEach(s => {
+    const tr = document.createElement('tr');
+    const qrUrl = `${window.location.origin}/place/${s.id}`;
+    tr.innerHTML = `
+      <td><strong>${s.name}</strong></td>
+      <td>
+        <div id="admin-qr-${s.id}" style="width:48px;height:48px;"></div>
+      </td>
+      <td>
+        <button class="btn-action" onclick="adminEdit('${s.id}')" title="Редактировать">✏️</button>
+        <button class="btn-action btn-action--delete" onclick="adminDelete('${s.id}')" title="Удалить">🗑️</button>
+      </td>
+    `;
+    tbody.appendChild(tr);
+
+    setTimeout(() => {
+      const el = document.getElementById(`admin-qr-${s.id}`);
+      if (el && typeof QRCode !== 'undefined') {
+        new QRCode(el, { text: qrUrl, width: 48, height: 48, colorDark: '#166534', colorLight: '#fff' });
+      }
+    }, 100);
+  });
 }
 
-window.openPlantModal = function() { document.getElementById('plantModal').classList.add('open'); };
-window.closePlantModal = function() { document.getElementById('plantModal').classList.remove('open'); };
-
-window.plantTree = function(e) {
-  e.preventDefault();
-  const name = document.getElementById('pName').value.trim();
-  const species = document.getElementById('pSpecies').value;
-  const place = document.getElementById('pPlace').value.trim();
-  if (!name || !place) return;
-
-  TREES_DATA.unshift({ id: Date.now(), name, species, place });
-  saveAllData();
-  renderTrees();
-  updateLiveCounters();
-  closePlantModal();
-  document.getElementById('plantForm').reset();
-  showNotification('Дерево занесено в реестр проекта! 🌱');
+window.adminEdit = function(id) {
+  const s = SIGHTS.find(x => x.id === id);
+  if (!s) return;
+  document.getElementById('editId').value    = s.id;
+  document.getElementById('asName').value    = s.name;
+  document.getElementById('asSubtitle').value = s.subtitle;
+  document.getElementById('asImg').value     = s.image;
+  document.getElementById('asShortDesc').value = s.shortDesc;
+  document.getElementById('asFullDesc').value  = s.description || '';
+  document.getElementById('adminFormTitle').textContent = '✏️ Редактировать объект';
+  document.getElementById('adminSection')?.scrollIntoView({ behavior: 'smooth' });
 };
 
-window.filterTrees = function() {
-  const query = document.getElementById('treeSearch').value.toLowerCase();
-  const grid = document.getElementById('treeGrid');
-  if (!grid) return;
-  grid.innerHTML = TREES_DATA.filter(t => t.name.toLowerCase().includes(query)).map(t => `
-    <div class="tree-card">
-      <div class="tree-card__header"><strong>${t.name}</strong></div>
-      <div style="font-size:2.5rem; text-align:center; margin: 0.5rem 0;">🌲</div>
-      <div style="font-size:0.85rem; color:#4b5563; text-align:center;">
-        <div>${t.species}</div>
-        <div>📍 ${t.place}</div>
-      </div>
-    </div>
-  `).join('');
+window.adminDelete = function(id) {
+  if (!confirm('Удалить этот объект?')) return;
+  SIGHTS = SIGHTS.filter(x => x.id !== id);
+  saveData();
+  renderSights();
+  renderAdminTable();
+  updateCounters();
+  showToast('🗑️ Объект удалён');
 };
 
-// ===== ОСТАЛЬНОЙ UI И АНИМАЦИИ =====
-function setupFormsLogic() {
-  const cleanForm = document.getElementById('cleanForm');
-  const cleanSuccess = document.getElementById('cleanSuccess');
-  if (cleanForm && cleanSuccess) {
-    cleanForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      REPORT_COUNT++;
-      saveAllData();
-      updateLiveCounters();
-      cleanForm.classList.add('hidden');
-      cleanSuccess.classList.remove('hidden');
-    });
-  }
-
-  const volForm = document.getElementById('volForm');
-  const volSuccess = document.getElementById('volSuccess');
-  if (volForm && volSuccess) {
-    volForm.addEventListener('submit', (e) => {
-      e.preventDefault();
-      volForm.classList.add('hidden');
-      volSuccess.classList.remove('hidden');
-    });
-  }
-
-  const burger = document.getElementById('burger');
-  const navLinks = document.getElementById('navLinks');
-  if (burger && navLinks) {
-    burger.addEventListener('click', () => {
-      navLinks.classList.toggle('open');
-      burger.classList.toggle('open');
-    });
-    navLinks.querySelectorAll('a').forEach(link => {
-      link.addEventListener('click', () => {
-        navLinks.classList.remove('open');
-        burger.classList.remove('open');
-      });
-    });
-  }
-}
-
-function initRevealAnimation() {
-  const items = document.querySelectorAll('.reveal');
-  const observer = new IntersectionObserver((entries) => {
+// ── 13. SCROLL REVEAL АНИМАЦИИ ───────────────────────────────
+function initReveal() {
+  const obs = new IntersectionObserver((entries) => {
     entries.forEach(entry => {
       if (entry.isIntersecting) {
         entry.target.classList.add('active');
-        observer.unobserve(entry.target); 
+        obs.unobserve(entry.target);
       }
     });
-  }, { threshold: 0.15 });
-  items.forEach(i => observer.observe(i));
+  }, { threshold: 0.12 });
+
+  document.querySelectorAll('.reveal:not(.active)').forEach(el => obs.observe(el));
 }
 
-function showNotification(msg) {
-  document.querySelectorAll('.eco-notification').forEach(el => el.remove());
-  const banner = document.createElement('div');
-  banner.className = 'eco-notification';
-  banner.style.cssText = `position: fixed; bottom: -50px; left: 50%; transform: translateX(-50%); background: #166534; color: white; padding: 14px 28px; border-radius: 30px; font-weight: 600; box-shadow: 0 10px 25px rgba(22, 101, 52, 0.4); z-index: 99999; transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); opacity: 0; pointer-events: none;`;
-  banner.textContent = msg;
-  document.body.appendChild(banner);
-  
+// Параллакс для hero
+function initParallax() {
+  const hero = document.querySelector('.hero__bg-image');
+  if (!hero) return;
+  window.addEventListener('scroll', () => {
+    const y = window.scrollY;
+    hero.style.transform = `translateY(${y * 0.35}px)`;
+  }, { passive: true });
+}
+
+// ── 14. УВЕДОМЛЕНИЯ (TOAST) ──────────────────────────────────
+function showToast(msg) {
+  document.querySelectorAll('.eco-toast').forEach(el => el.remove());
+  const toast = document.createElement('div');
+  toast.className = 'eco-toast';
+  toast.style.cssText = `
+    position:fixed; bottom:-60px; left:50%; transform:translateX(-50%);
+    background:#166534; color:white; padding:14px 28px; border-radius:30px;
+    font-weight:600; font-size:0.95rem; box-shadow:0 10px 30px rgba(22,101,52,0.4);
+    z-index:99999; transition:all 0.45s cubic-bezier(0.175,0.885,0.32,1.275);
+    opacity:0; white-space:nowrap; font-family:inherit;
+  `;
+  toast.textContent = msg;
+  document.body.appendChild(toast);
   requestAnimationFrame(() => {
-    banner.style.bottom = '24px';
-    banner.style.opacity = '1';
+    toast.style.bottom = '28px';
+    toast.style.opacity = '1';
+  });
+  setTimeout(() => {
+    toast.style.bottom = '-60px';
+    toast.style.opacity = '0';
+    setTimeout(() => toast.remove(), 500);
+  }, 3200);
+}
+
+// Экспортируем для inline использования
+window.showToast = showToast;
+
+// ── 15. БУРГЕР-МЕНЮ ──────────────────────────────────────────
+function initBurger() {
+  const burger   = document.getElementById('burger');
+  const navLinks = document.getElementById('navLinks');
+  if (!burger || !navLinks) return;
+
+  burger.addEventListener('click', () => {
+    burger.classList.toggle('open');
+    navLinks.classList.toggle('open');
   });
 
-  setTimeout(() => {
-    banner.style.bottom = '-50px';
-    banner.style.opacity = '0';
-    setTimeout(() => banner.remove(), 400);
-  }, 3000);
+  // Закрываем меню при клике на ссылку
+  navLinks.querySelectorAll('a').forEach(link => {
+    link.addEventListener('click', () => {
+      burger.classList.remove('open');
+      navLinks.classList.remove('open');
+    });
+  });
+
+  // Закрываем по клику вне меню
+  document.addEventListener('click', (e) => {
+    if (!navLinks.contains(e.target) && !burger.contains(e.target)) {
+      burger.classList.remove('open');
+      navLinks.classList.remove('open');
+    }
+  });
 }
 
-window.resetCleanForm = function() {
-  const form = document.getElementById('cleanForm');
-  const succ = document.getElementById('cleanSuccess');
-  if (form && succ) {
-    form.reset();
-    form.classList.remove('hidden');
-    succ.classList.add('hidden');
+// ── 16. РОУТИНГ /place/:id ───────────────────────────────────
+function handleRouting() {
+  const path = window.location.pathname;
+  if (path.startsWith('/place/')) {
+    const id = path.split('/')[2];
+    // Ждём рендера карточек
+    setTimeout(() => {
+      const sight = SIGHTS.find(s => s.id === id);
+      if (sight) {
+        openSightModal(id);
+      } else {
+        showToast('Объект не найден');
+        window.history.replaceState({}, '', '/');
+      }
+    }, 600);
   }
-};
+}
 
-// ЗАПУСК
+// Браузерная кнопка "назад"
+window.addEventListener('popstate', () => {
+  if (!window.location.pathname.startsWith('/place/')) {
+    closeModalById('sightModal');
+  }
+});
+
+// ── 17. СТАРТ ────────────────────────────────────────────────
 document.addEventListener('DOMContentLoaded', () => {
-  setupFormsLogic();
-  initAuthSystem();
+  // Закрытие модалок по overlay
+  document.querySelectorAll('.modal').forEach(m => {
+    m.querySelector('.modal__overlay')?.addEventListener('click', () => {
+      m.classList.remove('open');
+      document.body.style.overflow = '';
+      if (window.location.pathname.startsWith('/place/')) {
+        window.history.pushState({}, '', '/');
+      }
+    });
+  });
+
+  initBurger();
+  initAuth();
   renderSights();
   renderTrees();
-  initAdminLogic();
-  updateLiveCounters();
-  initRevealAnimation();
+  setupPlantForm();
+  setupVolForm();
+  setupCleanForm();
+  initAdmin();
+  updateCounters();
+  initReveal();
+  initParallax();
+  handleRouting();
 });
