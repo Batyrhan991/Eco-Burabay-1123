@@ -1,4 +1,3 @@
-
 <!DOCTYPE html>
 <html lang="ru">
 <head>
@@ -38,99 +37,119 @@
     </button>
 
     <ul class="nav__links" id="navLinks">
-      <li><a href="#guide">QR-гид</a></li>
-      <li><a href="#clean">Эко-патруль</a></li>
-      <li><a href="#trees">Моё дерево</a></li>
-      <li><a href="#map">Карта</a></li>
-      <li><a href="#volunteer">Волонтёры</a></li>
-      <li><button class="btn-admin-nav hidden" id="adminPanelBtn">🔑 Админка</button></li>
-      <li><button class="btn-auth" id="authBtn">Войти</button></li>
+      <li><a href="#guide" data-i18n="nav_guide">QR-гид</a></li>
+      <li><a href="#clean" data-i18n="nav_clean">Эко-патруль</a></li>
+      <li><a href="#trees" data-i18n="nav_trees">Моё дерево</a></li>
+      <li><a href="#map"   data-i18n="nav_map">Карта</a></li>
+      <li><a href="#volunteer" data-i18n="nav_volunteer">Волонтёры</a></li>
+      <li><button class="btn-admin-nav hidden" id="adminPanelBtn" data-i18n="nav_admin">🔑 Админка</button></li>
+      <li>
+        <!-- Переключатель языков -->
+        <div class="lang-switcher">
+          <button class="lang-btn lang-btn--active" data-lang="ru" onclick="setLang('ru')">RU</button>
+          <button class="lang-btn" data-lang="kz" onclick="setLang('kz')">ҚЗ</button>
+          <button class="lang-btn" data-lang="en" onclick="setLang('en')">EN</button>
+        </div>
+      </li>
+      <li><button class="btn-auth" id="authBtn" data-i18n="nav_login">Войти</button></li>
     </ul>
   </div>
 </nav>
 
+<!-- ── HERO ─────────────────────────────────────────────── -->
 <section class="hero" id="home">
   <div class="hero__bg-image"></div>
   <div class="hero__overlay"></div>
 
   <div class="hero__content">
-    <div class="hero__badge">🌿 Экологический проект Казахстана</div>
+    <div class="hero__badge" data-i18n="hero_badge">🌿 Экологический проект Казахстана</div>
     <h1 class="hero__title">Eco <span>Burabay</span></h1>
-    <p class="hero__slogan">Сканируй. Узнавай. Сохраняй.<br><em>Выращивай Бурабай вместе с нами!</em></p>
-    <p class="hero__desc">Цифровая платформа для сохранения природы и культурного наследия жемчужины Казахстана — национального природного парка «Бурабай».</p>
+    <p class="hero__slogan">
+      <span data-i18n="hero_slogan">Сканируй. Узнавай. Сохраняй.</span><br>
+      <em data-i18n="hero_slogan2">Выращивай Бурабай вместе с нами!</em>
+    </p>
+    <p class="hero__desc" data-i18n="hero_desc">Цифровая платформа для сохранения природы и культурного наследия жемчужины Казахстана — национального природного парка «Бурабай».</p>
     <div class="hero__btns">
-      <a href="#guide" class="btn btn--primary">🔲 Исследовать QR-гид</a>
-      <a href="#trees" class="btn btn--outline">🌱 Посадить дерево</a>
+      <a href="#guide" class="btn btn--primary" data-i18n="hero_btn_qr">🔲 Исследовать QR-гид</a>
+      <a href="#trees" class="btn btn--outline" data-i18n="hero_btn_tree">🌱 Посадить дерево</a>
     </div>
   </div>
 
   <div class="hero__stats">
     <div class="stat">
       <span class="stat__num" id="liveTreeCount">0</span>
-      <span class="stat__label">Деревьев посажено</span>
+      <span class="stat__label" data-i18n="stat_trees">Деревьев посажено</span>
     </div>
     <div class="stat">
       <span class="stat__num" id="liveSightCount">0</span>
-      <span class="stat__label">QR-объектов</span>
+      <span class="stat__label" data-i18n="stat_qr">QR-объектов</span>
     </div>
     <div class="stat">
       <span class="stat__num">340</span>
-      <span class="stat__label">Участников</span>
+      <span class="stat__label" data-i18n="stat_members">Участников</span>
     </div>
     <div class="stat">
       <span class="stat__num" id="liveReportCount">0</span>
-      <span class="stat__label">Решённых проблем</span>
+      <span class="stat__label" data-i18n="stat_solved">Решённых проблем</span>
     </div>
   </div>
 </section>
 
+<!-- ── МОДАЛ: АВТОРИЗАЦИЯ ────────────────────────────────── -->
 <div class="modal" id="authModal">
   <div class="modal__overlay"></div>
   <div class="modal__box modal__box--sm">
     <button class="modal__close" onclick="closeAuthModal()">✕</button>
 
     <div id="loginFormWindow">
-      <h3 class="auth-title">Вход в систему</h3>
+      <h3 class="auth-title" data-i18n="auth_login_title">Вход в систему</h3>
       <form id="loginForm">
         <div class="form-group">
-          <label for="loginEmail">Email</label>
-          <input type="email" id="loginEmail" required placeholder="example@mail.com" />
+          <label for="loginEmail" data-i18n="auth_email">Email</label>
+          <input type="email" id="loginEmail" required placeholder="example@mail.com" autocomplete="email" />
         </div>
         <div class="form-group">
-          <label for="loginPassword">Пароль</label>
-          <input type="password" id="loginPassword" required placeholder="••••••••" />
+          <label for="loginPassword" data-i18n="auth_password">Пароль</label>
+          <input type="password" id="loginPassword" required data-i18n-placeholder="auth_pass_ph" placeholder="••••••••" autocomplete="current-password" />
         </div>
-        <button type="submit" class="btn btn--primary btn--full">Войти</button>
+        <button type="submit" class="btn btn--primary btn--full" data-i18n="auth_login_btn">Войти</button>
       </form>
-      <p class="auth-switch">Нет аккаунта? <a href="#" onclick="toggleAuthWindows(event,'reg')">Зарегистрироваться</a></p>
+      <p class="auth-switch">
+        <span data-i18n="auth_no_acc">Нет аккаунта?</span>
+        <a href="#" onclick="toggleAuthWindows(event,'reg')" data-i18n="auth_do_reg">Зарегистрироваться</a>
+      </p>
       <div class="auth-hint">
-        💡 Администратор:<br>
-        Email: <code>admin@eco.kz</code>  |  Пароль: <code>admin123</code>
+        <span data-i18n="auth_hint">💡 Администратор:</span><br>
+        Email: <code>admin@eco.kz</code> | Пароль: <code>admin123</code>
       </div>
     </div>
 
     <div id="registerFormWindow" class="hidden">
-      <h3 class="auth-title">Регистрация</h3>
+      <h3 class="auth-title" data-i18n="auth_reg_title">Регистрация</h3>
       <form id="registerForm">
         <div class="form-group">
-          <label for="regName">Ваше имя</label>
-          <input type="text" id="regName" required placeholder="Батырхан Ахметов" />
+          <label for="regName" data-i18n="auth_name">Ваше имя</label>
+          <input type="text" id="regName" required data-i18n-placeholder="auth_name_ph" placeholder="Батырхан Ахметов" autocomplete="name" />
         </div>
         <div class="form-group">
-          <label for="regEmail">Email</label>
-          <input type="email" id="regEmail" required placeholder="example@mail.com" />
+          <label for="regEmail" data-i18n="auth_email">Email</label>
+          <input type="email" id="regEmail" required placeholder="example@mail.com" autocomplete="email" />
         </div>
         <div class="form-group">
-          <label for="regPassword">Пароль</label>
-          <input type="password" id="regPassword" required placeholder="Минимум 6 символов" />
+          <label for="regPassword" data-i18n="auth_password">Пароль</label>
+          <input type="password" id="regPassword" required data-i18n-placeholder="auth_pass_ph" placeholder="Минимум 6 символов" autocomplete="new-password" />
         </div>
-        <button type="submit" class="btn btn--primary btn--full">Создать аккаунт</button>
+        <button type="submit" class="btn btn--primary btn--full" data-i18n="auth_reg_btn">Создать аккаунт</button>
       </form>
-      <p class="auth-switch">Уже есть аккаунт? <a href="#" onclick="toggleAuthWindows(event,'login')">Войти</a></p>
+      <p class="auth-switch">
+        <span data-i18n="auth_has_acc">Уже есть аккаунт?</span>
+        <a href="#" onclick="toggleAuthWindows(event,'login')" data-i18n="auth_do_login">Войти</a>
+      </p>
     </div>
   </div>
 </div>
 
+<!-- ── МОДАЛ: ДОСТОПРИМЕЧАТЕЛЬНОСТЬ ─────────────────────── -->
 <div class="modal" id="sightModal">
   <div class="modal__overlay"></div>
   <div class="modal__box">
@@ -139,81 +158,83 @@
   </div>
 </div>
 
+<!-- ── МОДАЛ: ПОСАДКА ДЕРЕВА ─────────────────────────────── -->
 <div class="modal" id="plantModal">
   <div class="modal__overlay"></div>
   <div class="modal__box modal__box--sm">
     <button class="modal__close" onclick="closePlantModal()">✕</button>
-    <h3 style="margin-bottom:1.5rem;color:var(--green-dark);font-size:1.3rem;">🌱 Регистрация нового дерева</h3>
+    <h3 style="margin-bottom:1.5rem;color:var(--green-dark);font-size:1.3rem;" data-i18n="plant_title">🌱 Регистрация нового дерева</h3>
     <form id="plantForm">
       <div class="form-group">
-        <label for="pName">Имя владельца / Организация *</label>
-        <input type="text" id="pName" required placeholder="Батырхан" />
+        <label for="pName" data-i18n="plant_owner">Имя владельца / Организация *</label>
+        <input type="text" id="pName" required data-i18n-placeholder="plant_owner_ph" placeholder="Батырхан" />
       </div>
       <div class="form-group">
-        <label for="pSpecies">Порода дерева *</label>
+        <label for="pSpecies" data-i18n="plant_species">Порода дерева *</label>
         <select id="pSpecies" required>
-          <option value="Сосна обыкновенная">🌲 Сосна обыкновенная</option>
-          <option value="Берёза повислая">🌳 Берёза повислая</option>
-          <option value="Ель сибирская">🎄 Ель сибирская</option>
+          <option value="pine"  data-i18n="species_pine">🌲 Сосна обыкновенная</option>
+          <option value="birch" data-i18n="species_birch">🌳 Берёза повислая</option>
+          <option value="fir"   data-i18n="species_fir">🎄 Ель сибирская</option>
         </select>
       </div>
       <div class="form-group">
-        <label for="pPlace">Сектор посадки *</label>
-        <input type="text" id="pPlace" required placeholder="Зона №3 (Озеро Малое Чебачье)" />
+        <label for="pPlace" data-i18n="plant_zone">Сектор посадки *</label>
+        <input type="text" id="pPlace" required data-i18n-placeholder="plant_zone_ph" placeholder="Зона №3 (Озеро Малое Чебачье)" />
       </div>
-      <button type="submit" class="btn btn--primary btn--full">Внести в реестр 🌿</button>
+      <button type="submit" class="btn btn--primary btn--full" data-i18n="plant_btn">Внести в реестр 🌿</button>
     </form>
   </div>
 </div>
 
+<!-- ── АДМИН-ПАНЕЛЬ ──────────────────────────────────────── -->
 <section class="section admin-panel hidden" id="adminSection">
   <div class="container">
     <div class="section__head">
-      <span class="section__eyebrow">Панель администратора</span>
-      <h2>Управление QR-объектами</h2>
+      <span class="section__eyebrow" data-i18n="admin_eyebrow">Панель администратора</span>
+      <h2 data-i18n="admin_title">Управление QR-объектами</h2>
     </div>
 
     <div class="admin-layout">
       <div class="admin-card">
-        <h3 id="adminFormTitle">➕ Добавить объект</h3>
+        <h3 id="adminFormTitle" data-i18n="admin_add">➕ Добавить объект</h3>
         <form id="adminSightForm">
           <input type="hidden" id="editId" value="" />
           <div class="form-group">
-            <label for="asName">Название *</label>
-            <input type="text" id="asName" required placeholder="Озеро Бурабай" />
+            <label for="asName" data-i18n="admin_name">Название *</label>
+            <input type="text" id="asName" required data-i18n-placeholder="admin_name_ph" placeholder="Озеро Бурабай" />
           </div>
           <div class="form-group">
-            <label for="asSubtitle">Подзаголовок *</label>
-            <input type="text" id="asSubtitle" required placeholder="Главный водоём парка" />
+            <label for="asSubtitle" data-i18n="admin_subtitle">Подзаголовок *</label>
+            <input type="text" id="asSubtitle" required data-i18n-placeholder="admin_subtitle_ph" placeholder="Главный водоём парка" />
           </div>
           <div class="form-group">
-            <label for="asImg">URL изображения</label>
+            <label for="asImg" data-i18n="admin_img">URL изображения</label>
             <input type="url" id="asImg" placeholder="https://..." />
           </div>
           <div class="form-group">
-            <label for="asShortDesc">Краткое описание *</label>
-            <textarea id="asShortDesc" rows="2" required placeholder="Для карточки (1–2 предложения)"></textarea>
+            <label for="asShortDesc" data-i18n="admin_short">Краткое описание *</label>
+            <textarea id="asShortDesc" rows="2" required data-i18n-placeholder="admin_short_ph" placeholder="Для карточки (1–2 предложения)"></textarea>
           </div>
           <div class="form-group">
-            <label for="asFullDesc">Полное описание *</label>
-            <textarea id="asFullDesc" rows="4" required placeholder="Для модального окна"></textarea>
+            <label for="asFullDesc" data-i18n="admin_full">Полное описание *</label>
+            <textarea id="asFullDesc" rows="4" required data-i18n-placeholder="admin_full_ph" placeholder="Для модального окна"></textarea>
           </div>
           <div style="display:flex; gap:10px;">
-            <button type="submit" class="btn btn--primary">Сохранить</button>
-            <button type="button" class="btn btn--outline" style="color:var(--slate);border-color:var(--slate);" onclick="resetAdminForm()">Отмена</button>
+            <button type="submit" class="btn btn--primary" data-i18n="admin_save">Сохранить</button>
+            <button type="button" class="btn btn--outline" style="color:var(--slate);border-color:var(--slate);" onclick="resetAdminForm()" data-i18n="admin_cancel">Отмена</button>
           </div>
         </form>
       </div>
 
       <div class="admin-card">
-        <h3>Список объектов</h3>
+        <h3 data-i18n="admin_list">Список объектов</h3>
         <div style="overflow-x:auto;">
           <table class="admin-table">
             <thead>
               <tr>
-                <th>Название</th>
-                <th>QR-код</th>
-                <th>Действия</th>
+                <th data-i18n="admin_col_name">Название</th>
+                <th data-i18n="admin_col_qr">QR-код</th>
+                <th data-i18n="admin_col_act">Действия</th>
               </tr>
             </thead>
             <tbody id="adminSightsTableBody"></tbody>
@@ -224,12 +245,13 @@
   </div>
 </section>
 
+<!-- ── QR-ГИД ────────────────────────────────────────────── -->
 <section class="section guide" id="guide">
   <div class="container">
     <div class="section__head reveal">
-      <span class="section__eyebrow">QR-гид по Бурабаю</span>
-      <h2>Достопримечательности</h2>
-      <p style="color:#64748b;margin-top:12px;max-width:520px;margin-left:auto;margin-right:auto;">
+      <span class="section__eyebrow" data-i18n="guide_eyebrow">QR-гид по Бурабаю</span>
+      <h2 data-i18n="guide_title">Достопримечательности</h2>
+      <p style="color:#64748b;margin-top:12px;max-width:520px;margin-left:auto;margin-right:auto;" data-i18n="guide_desc">
         Каждая карточка содержит QR-код. Отсканируйте — и получите полную информацию об объекте прямо на вашем телефоне.
       </p>
     </div>
@@ -237,32 +259,33 @@
   </div>
 </section>
 
+<!-- ── ЭКО-ПАТРУЛЬ ───────────────────────────────────────── -->
 <section class="section clean" id="clean">
   <div class="container">
     <div class="clean__inner">
       <div class="clean__content reveal">
-        <span class="section__eyebrow">Эко-патруль</span>
-        <h2>Заметили мусор? Сообщите нам!</h2>
-        <p>Сделайте фото, укажите место — и наши волонтёрские отряды оперативно отправятся на очистку территории.</p>
+        <span class="section__eyebrow" data-i18n="clean_eyebrow">Эко-патруль</span>
+        <h2 data-i18n="clean_title">Заметили мусор? Сообщите нам!</h2>
+        <p data-i18n="clean_desc">Сделайте фото, укажите место — и наши волонтёрские отряды оперативно отправятся на очистку территории.</p>
 
         <div id="cleanFormBlock">
           <form id="cleanForm" style="margin-top: 20px;">
             <div class="form-group">
-              <label for="cfLocation">Где обнаружен мусор? *</label>
-              <input type="text" id="cfLocation" required placeholder="Поляна Абылай хана, возле опушки" />
+              <label for="cfLocation" data-i18n="clean_where">Где обнаружен мусор? *</label>
+              <input type="text" id="cfLocation" required data-i18n-placeholder="clean_where_ph" placeholder="Поляна Абылай хана, возле опушки" />
             </div>
             <div class="form-group">
-              <label for="cfDesc">Описание *</label>
-              <textarea id="cfDesc" rows="3" required placeholder="Пластиковые бутылки, пакеты..."></textarea>
+              <label for="cfDesc" data-i18n="clean_desc_lbl">Описание *</label>
+              <textarea id="cfDesc" rows="3" required data-i18n-placeholder="clean_desc_ph" placeholder="Пластиковые бутылки, пакеты..."></textarea>
             </div>
-            <button type="submit" class="btn btn--primary">Отправить заявку в патруль 🚶</button>
+            <button type="submit" class="btn btn--primary" data-i18n="clean_btn">Отправить заявку в патруль 🚶</button>
           </form>
         </div>
 
         <div id="cleanSuccess" class="hidden" style="margin-top:20px; background:#dcfce7; padding:22px; border-radius:14px; color:#166534; border:1px solid #bbf7d0;">
-          <h3 style="margin-bottom:8px;">✅ Заявка принята!</h3>
-          <p>Спасибо за вклад в сохранение природы. Эко-волонтёры уведомлены.</p>
-          <button class="btn btn--outline" style="color:#166534;border-color:#166534;margin-top:14px;padding:8px 18px;font-size:0.9rem;" onclick="resetCleanForm()">
+          <h3 style="margin-bottom:8px;" data-i18n="clean_ok_title">✅ Заявка принята!</h3>
+          <p data-i18n="clean_ok_text">Спасибо за вклад в сохранение природы. Эко-волонтёры уведомлены.</p>
+          <button class="btn btn--outline" style="color:#166534;border-color:#166534;margin-top:14px;padding:8px 18px;font-size:0.9rem;" onclick="resetCleanForm()" data-i18n="clean_more">
             Отправить ещё
           </button>
         </div>
@@ -277,62 +300,69 @@
   </div>
 </section>
 
+<!-- ── ДЕРЕВЬЯ ───────────────────────────────────────────── -->
 <section class="section trees" id="trees">
   <div class="container">
     <div class="section__head reveal">
-      <span class="section__eyebrow">Моё дерево в Бурабае</span>
-      <h2>Электронный реестр посаженных деревьев</h2>
+      <span class="section__eyebrow" data-i18n="trees_eyebrow">Моё дерево в Бурабае</span>
+      <h2 data-i18n="trees_title">Электронный реестр посаженных деревьев</h2>
     </div>
     <div class="trees__actions reveal">
-      <button class="btn btn--primary" onclick="openPlantModal()">🌱 Посадить своё дерево</button>
+      <button class="btn btn--primary" onclick="openPlantModal()" data-i18n="trees_plant">🌱 Посадить своё дерево</button>
       <div class="trees__search">
-        <input type="text" id="treeSearch" placeholder="🔍 Поиск по имени или породе..." oninput="filterTrees()" />
+        <input type="text" id="treeSearch" data-i18n-placeholder="trees_search" placeholder="🔍 Поиск по имени или породе..." oninput="filterTrees()" />
       </div>
     </div>
     <div class="tree-grid reveal" id="treeGrid"></div>
   </div>
 </section>
 
+<!-- ── КАРТА ─────────────────────────────────────────────── -->
 <section class="section map-section" id="map">
   <div class="container">
     <div class="section__head reveal">
-      <span class="section__eyebrow">Навигация</span>
-      <h2>Интерактивная карта Бурабая</h2>
+      <span class="section__eyebrow" data-i18n="map_eyebrow">Навигация</span>
+      <h2 data-i18n="map_title">Интерактивная карта Бурабая</h2>
     </div>
     <div class="map-container reveal">
       <iframe
-        src="https://maps.google.com/maps?q=Burabay&t=&z=13&ie=UTF8&iwloc=&output=embed"
+        src="https://maps.google.com/maps?q=Burabay+National+Park+Kazakhstan&t=&z=13&ie=UTF8&iwloc=&output=embed"
         width="100%" height="100%" style="border:0;"
-        allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade">
+        allowfullscreen="" loading="lazy" referrerpolicy="no-referrer-when-downgrade"
+        title="Burabay Map">
       </iframe>
     </div>
   </div>
 </section>
 
+<!-- ── ВОЛОНТЁРЫ ─────────────────────────────────────────── -->
 <section class="section volunteer" id="volunteer">
   <div class="container">
     <div class="volunteer__inner reveal">
-      <h2>Стань эко-волонтёром</h2>
-      <p>Участвуйте в масштабных посадках леса, рейдах чистоты и просветительских мероприятиях.</p>
+      <h2 data-i18n="vol_title">Стань эко-волонтёром</h2>
+      <p data-i18n="vol_desc">Участвуйте в масштабных посадках леса, рейдах чистоты и просветительских мероприятиях.</p>
       <form id="volForm" class="vol-form">
-        <input type="text"  id="volName"  placeholder="Ваше имя" required />
-        <input type="tel"   id="volPhone" placeholder="+7 (707) 000-00-00" required />
-        <button type="submit" class="btn btn--secondary">Подать заявку</button>
+        <input type="text"  id="volName"  data-i18n-placeholder="vol_name"  placeholder="Ваше имя"           required autocomplete="name" />
+        <input type="tel"   id="volPhone" data-i18n-placeholder="vol_phone" placeholder="+7 (707) 000-00-00" required autocomplete="tel" />
+        <button type="submit" class="btn btn--secondary" data-i18n="vol_btn">Подать заявку</button>
       </form>
-      <div id="volSuccess" class="hidden" style="color:white;margin-top:1.2rem;font-weight:700;font-size:1.1rem;">
+      <div id="volSuccess" class="hidden" style="color:white;margin-top:1.2rem;font-weight:700;font-size:1.1rem;" data-i18n="vol_ok">
         🎉 Вы в команде! Мы свяжемся с вами в ближайшее время.
       </div>
     </div>
   </div>
 </section>
 
+<!-- ── ФУТЕР ─────────────────────────────────────────────── -->
 <footer class="footer">
   <div class="container">
-    <p>© 2026 Eco Burabay. Разработано для защиты природы Казахстана 🌿</p>
+    <p data-i18n="footer">© 2026 Eco Burabay. Разработано для защиты природы Казахстана 🌿</p>
   </div>
 </footer>
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
-  <script src="script.js"></script>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="/i18n.js"></script>
+<script src="/script.js"></script>
 
 </body>
 </html>
