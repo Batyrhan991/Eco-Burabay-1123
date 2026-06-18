@@ -123,7 +123,32 @@ body {
 
 .btn-admin-nav { background: #fbbf24; color: var(--slate); margin-right: 6px; }
 .btn-admin-nav:hover { background: #f59e0b; transform: translateY(-2px); }
-
+.lang-switcher {
+  display: flex;
+  gap: 8px;
+  margin-right: 10px;
+}
+.lang-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  color: var(--slate-mid);
+  padding: 4px 8px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-weight: 500;
+  font-size: 0.85rem;
+  transition: all var(--transition);
+}
+.lang-btn:hover {
+  border-color: var(--green-dark);
+  color: var(--green-dark);
+}
+.lang-btn--active {
+  background: var(--green-pale);
+  border-color: var(--green-dark);
+  color: var(--green-dark);
+  font-weight: 700;
+}
 /* ── КНОПКИ ─────────────────────────────────────────────────── */
 .btn {
   display: inline-block; padding: 12px 28px; border-radius: 30px;
