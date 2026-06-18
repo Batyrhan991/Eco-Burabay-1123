@@ -5,7 +5,6 @@
    ========================================================= */
 
 // ── СИНХРОНИЗАЦИЯ С ОБЛАКОМ SUPABASE ───────────────────────
-// НАСТРОЙКА: Замените эти данные на ключи из вашего проекта Supabase (Settings -> API)
 const SUPABASE_URL = 'https://owsyrkvkyaeqqalxdqgc.supabase.co';
 const SUPABASE_ANON_KEY = 'sb_publishable_th2MsqnMjnUHXrEyN1dZAQ_6V3x03bI';
 
@@ -26,7 +25,6 @@ function setLS(key, val) {
 }
 
 // ── 2. ДАННЫЕ И ДЕФОЛТНЫЕ НАСТРОЙКИ ────────────────────────
-// Переименовано из SIGHTS_DATA в DEFAULT_SIGHTS для совместимости с loadGlobalData
 const DEFAULT_SIGHTS = [
   {
     id: 'burabay',
@@ -64,7 +62,6 @@ let SIGHTS = [];
 let TREES  = [];
 let CURRENT_USER = getLS('eco_user', null);
 
-// Функция асинхронной загрузки данных из облака
 async function loadGlobalData() {
   if (!supabaseClient) {
     SIGHTS = DEFAULT_SIGHTS;
@@ -72,7 +69,6 @@ async function loadGlobalData() {
     return;
   }
   try {
-    // Параллельно запрашиваем достопримечательности и деревья из БД
     const [sightsResponse, treesResponse] = await Promise.all([
       supabaseClient.from('eco_sights').select('*'),
       supabaseClient.from('eco_trees').select('*').order('created_at', { ascending: false })
@@ -127,7 +123,6 @@ function renderSights() {
 
     const qrPlaceholder = `qr-mini-${sight.id}`;
 
-    // Перевод по ключам из i18n или динамическим ключам id
     const name = t(sight.nameKey || `sight_${sight.id}_name`);
     const shortDesc = t(sight.shortDescKey || `sight_${sight.id}_short`);
 
@@ -178,7 +173,6 @@ window.openSightModal = function(id) {
   const content = document.getElementById('modalContent');
   if (!modal || !content) return;
 
-  // Локализация всех текстовых полей модального окна перед выводом
   const name = t(sight.nameKey || `sight_${sight.id}_name`);
   const subtitle = t(sight.subtitleKey || `sight_${sight.id}_sub`);
   const description = t(sight.descriptionKey || `sight_${sight.id}_desc`);
@@ -191,8 +185,8 @@ window.openSightModal = function(id) {
     <h2 style="margin:10px 0 16px;">${name}</h2>
     <p style="color:#475569;line-height:1.7;">${description || sight.shortDesc}</p>
     <div style="margin-top:24px;display:flex;gap:12px;">
-      <button class="btn btn--primary" onclick="openQrModal('${sight.id}'); closeModal();">
-        🔲 Получить QR-код
+      <button class="btn btn--primary" onclick="openQrModal('${sight.id}'); closeModal();" data-i18n="modal_get_qr">
+        ${t('modal_get_qr') || '🔲 Получить QR-код'}
       </button>
     </div>
   `;
@@ -226,13 +220,14 @@ window.openQrModal = function(id) {
   const fullUrl = `${window.location.origin}/place/${id}`;
   const name = t(sight.nameKey || `sight_${sight.id}_name`);
 
+  // ИСПРАВЛЕНО: Добавлены динамические переводы заголовка и кнопки скачивания
   document.getElementById('qrModalBody').innerHTML = `
-    <h3 style="margin-bottom:8px;">QR-код объекта</h3>
+    <h3 style="margin-bottom:8px;" data-i18n="modal_qr_title">${t('modal_qr_title') || 'QR-код объекта'}</h3>
     <p style="color:#64748b;font-size:0.85rem;margin-bottom:20px;">${name}</p>
     <div id="qrCodeBig" style="display:inline-block;padding:16px;background:white;border-radius:12px;border:2px solid #e2e8f0;"></div>
     <p style="margin-top:16px;font-size:0.8rem;color:#64748b;word-break:break-all;">${fullUrl}</p>
-    <button class="btn btn--primary" style="margin-top:16px;" onclick="downloadQR('${id}','${name}')">
-      ⬇ Скачать QR-код
+    <button class="btn btn--primary" style="margin-top:16px;" onclick="downloadQR('${id}','${name}')" data-i18n="modal_dl_qr">
+      ${t('modal_dl_qr') || '⬇ Скачать QR-код'}
     </button>
   `;
 
@@ -270,6 +265,11 @@ function openModal(id) {
   const m = document.getElementById(id);
   if (m) { m.classList.add('open'); document.body.style.overflow = 'hidden'; }
 }
+
+// ИСПРАВЛЕНО: Экспортируем функции открытия в глобальную область window
+window.openModal = openModal;
+window.openPlantModal = () => openModal('plantModal'); 
+
 function closeModalById(id) {
   const m = document.getElementById(id);
   if (m) { m.classList.remove('open'); document.body.style.overflow = ''; }
@@ -332,7 +332,7 @@ function renderTrees(filter = '') {
   initReveal();
 }
 
-// ── 8.1 ФОРМА ПОСАДКИ ДЕРЕВА (Добавлена исправленная функция) ──
+// ── 8.1 ФОРМА ПОСАДКИ ДЕРЕВА ─────────────────────────────────
 function setupPlantForm() {
   const form = document.getElementById('plantForm');
   if (!form) return;
@@ -700,18 +700,14 @@ window.addEventListener('popstate', () => {
 
 // ── 17. СТАРТ ПРИЛОЖЕНИЯ ПРИ ЗАГРУЗКЕ СТРАНИЦЫ ───────────────
 document.addEventListener('DOMContentLoaded', async () => {
-  
-  // 1. Сначала подтягиваем данные из глобального облака
   showToast('🔄 Загрузка данных эко-парка...');
   await loadGlobalData();
 
-   // Инициализация локализации
   if (typeof applyTranslations === 'function') {
     applyTranslations();
     updateLangButtons();
   }
    
-  // 2. Инициализируем весь интерфейс
   document.querySelectorAll('.modal').forEach(m => {
     m.querySelector('.modal__overlay')?.addEventListener('click', () => {
       m.classList.remove('open');
