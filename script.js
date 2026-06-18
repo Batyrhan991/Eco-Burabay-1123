@@ -1,4 +1,3 @@
-
 'use strict';
 
 /* =========================================================
@@ -27,30 +26,31 @@ function setLS(key, val) {
 }
 
 // ── 2. ДАННЫЕ И ДЕФОЛТНЫЕ НАСТРОЙКИ ────────────────────────
+// Переименовано из SIGHTS_DATA в DEFAULT_SIGHTS для совместимости с loadGlobalData
 const DEFAULT_SIGHTS = [
   {
     id: 'burabay',
-    name: 'Озеро Бурабай',
-    subtitle: 'Главный водоём парка',
     image: 'https://borovoe.kz/upload/medialibrary/454/454cf69f5a0ad9b5bbeba27b18d9b644.jpg',
-    shortDesc: 'Сердце национального парка — кристальное озеро среди гранитных скал.',
-    description: 'Озеро Бурабай (Боровое) — бессточное озеро в Бурабайском районе Акмолинской области Казахстана. Оно окружено величественными сосновыми лесами и причудливыми скалами.'
+    nameKey:      'sight_burabay_name',
+    subtitleKey:  'sight_burabay_sub',
+    shortDescKey: 'sight_burabay_short',
+    descriptionKey: 'sight_burabay_desc'
   },
   {
     id: 'okzhetpes',
-    name: 'Скала Окжетпес',
-    subtitle: 'Высота около 200 м',
     image: 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQk3V5RUyOVEO-SbDIzmLzxDftQsEoDcPcir5lAXspjuA&s=10',
-    shortDesc: 'Величественная скала, чьё название означает «Стрела не долетит».',
-    description: 'Гранитная скала на берегу озера Боровое. Её вершина напоминает лежащего слона. Окжетпес воспета в многочисленных легендах казахского народа.'
+    nameKey:      'sight_okzh_name',
+    subtitleKey:  'sight_okzh_sub',
+    shortDescKey: 'sight_okzh_short',
+    descriptionKey: 'sight_okzh_desc'
   },
   {
     id: 'zhumbaktas',
-    name: 'Скала Жумбактас',
-    subtitle: 'Загадочный камень',
     image: 'https://img.mustafinmag.kz/eX1X4UKNS9c/el:true/rs:fit:3840/dpr:1/f:webp/czM6Ly9tdXN0YWZpbi1tYWdhemluZS9pbWcvZjdkOWU3ZjZhNjVhOTZiZjIxMjM4YTdmNjlmNGFlMTcuanBn',
-    shortDesc: 'Гранитная скала посреди озера — символ Бурабая.',
-    description: 'Жумбактас (Загадочный камень) — одна из самых узнаваемых достопримечательностей парка. Скала расположена прямо в воде озера Боровое.'
+    nameKey:      'sight_zhumb_name',
+    subtitleKey:  'sight_zhumb_sub',
+    shortDescKey: 'sight_zhumb_short',
+    descriptionKey: 'sight_zhumb_desc'
   }
 ];
 
@@ -92,6 +92,7 @@ async function loadGlobalData() {
 
 // ── 3. СЧЁТЧИКИ С АНИМАЦИЕЙ ──────────────────────────────────
 function animateCounter(el, target, duration = 1200) {
+  if (!el) return;
   let start = 0;
   const step = target / (duration / 16);
   const tick = () => {
@@ -107,6 +108,7 @@ function updateCounters() {
   const sEl = document.getElementById('liveSightCount');
   const rEl = document.getElementById('liveReportCount');
   const reports = getLS('eco_reports', []);
+  
   if (tEl) animateCounter(tEl, TREES.length);
   if (sEl) animateCounter(sEl, SIGHTS.length);
   if (rEl) animateCounter(rEl, reports.length + 2);
@@ -125,12 +127,9 @@ function renderSights() {
 
     const qrPlaceholder = `qr-mini-${sight.id}`;
 
-    // Ищем переводы. Если их нет (например, для новых объектов из админки), используем текст из БД
-    const tName = t(`sight_${sight.id}_name`);
-    const name = tName !== `sight_${sight.id}_name` ? tName : sight.name;
-
-    const tShort = t(`sight_${sight.id}_short`);
-    const shortDesc = tShort !== `sight_${sight.id}_short` ? tShort : sight.shortDesc;
+    // Перевод по ключам из i18n или динамическим ключам id
+    const name = t(sight.nameKey || `sight_${sight.id}_name`);
+    const shortDesc = t(sight.shortDescKey || `sight_${sight.id}_short`);
 
     card.innerHTML = `
       <div class="card__img">
@@ -179,13 +178,18 @@ window.openSightModal = function(id) {
   const content = document.getElementById('modalContent');
   if (!modal || !content) return;
 
+  // Локализация всех текстовых полей модального окна перед выводом
+  const name = t(sight.nameKey || `sight_${sight.id}_name`);
+  const subtitle = t(sight.subtitleKey || `sight_${sight.id}_sub`);
+  const description = t(sight.descriptionKey || `sight_${sight.id}_desc`);
+
   content.innerHTML = `
-    <img src="${sight.image}" alt="${sight.name}"
+    <img src="${sight.image}" alt="${name}"
          style="width:100%;height:260px;object-fit:cover;border-radius:12px;margin-bottom:20px;"
          onerror="this.style.display='none'">
-    <span class="section__eyebrow">${sight.subtitle}</span>
-    <h2 style="margin:10px 0 16px;">${sight.name}</h2>
-    <p style="color:#475569;line-height:1.7;">${sight.description || sight.shortDesc}</p>
+    <span class="section__eyebrow">${subtitle}</span>
+    <h2 style="margin:10px 0 16px;">${name}</h2>
+    <p style="color:#475569;line-height:1.7;">${description || sight.shortDesc}</p>
     <div style="margin-top:24px;display:flex;gap:12px;">
       <button class="btn btn--primary" onclick="openQrModal('${sight.id}'); closeModal();">
         🔲 Получить QR-код
@@ -220,12 +224,14 @@ window.openQrModal = function(id) {
   }
 
   const fullUrl = `${window.location.origin}/place/${id}`;
+  const name = t(sight.nameKey || `sight_${sight.id}_name`);
+
   document.getElementById('qrModalBody').innerHTML = `
     <h3 style="margin-bottom:8px;">QR-код объекта</h3>
-    <p style="color:#64748b;font-size:0.85rem;margin-bottom:20px;">${sight.name}</p>
+    <p style="color:#64748b;font-size:0.85rem;margin-bottom:20px;">${name}</p>
     <div id="qrCodeBig" style="display:inline-block;padding:16px;background:white;border-radius:12px;border:2px solid #e2e8f0;"></div>
     <p style="margin-top:16px;font-size:0.8rem;color:#64748b;word-break:break-all;">${fullUrl}</p>
-    <button class="btn btn--primary" style="margin-top:16px;" onclick="downloadQR('${id}','${sight.name}')">
+    <button class="btn btn--primary" style="margin-top:16px;" onclick="downloadQR('${id}','${name}')">
       ⬇ Скачать QR-код
     </button>
   `;
@@ -292,7 +298,6 @@ function renderTrees(filter = '') {
     return;
   }
 
-  // Карта соответствия типов из БД к ключам перевода
   const typeMap = {
     'pine': 'species_pine', 'Сосна обыкновенная': 'species_pine',
     'birch': 'species_birch', 'Берёза повислая': 'species_birch',
@@ -303,7 +308,6 @@ function renderTrees(filter = '') {
     const icons = { 'Сосна обыкновенная': '🌲', 'Берёза повислая': '🌳', 'Ель сибирская': '🎄', 'pine': '🌲', 'birch': '🌳', 'fir': '🎄' };
     const icon = icons[tree.type] || '🌲';
     
-    // Перевод динамических данных
     const typeKey = typeMap[tree.type];
     const localizedType = typeKey ? t(typeKey) : tree.type;
     const planter = tree.planter || t('tree_anon');
@@ -326,6 +330,42 @@ function renderTrees(filter = '') {
     grid.appendChild(card);
   });
   initReveal();
+}
+
+// ── 8.1 ФОРМА ПОСАДКИ ДЕРЕВА (Добавлена исправленная функция) ──
+function setupPlantForm() {
+  const form = document.getElementById('plantForm');
+  if (!form) return;
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    
+    const treeTypeSelect = document.getElementById('treeType');
+    const planterNameInput = document.getElementById('planterName');
+    
+    const newTree = {
+      id: 't-' + Date.now(),
+      type: treeTypeSelect ? treeTypeSelect.value : 'Сосна обыкновенная',
+      place: 'Зона №' + (Math.floor(Math.random() * 3) + 1),
+      date: new Date().toLocaleDateString('ru-RU'),
+      planter: planterNameInput && planterNameInput.value.trim() ? planterNameInput.value.trim() : 'Аноним'
+    };
+
+    if (supabaseClient) {
+      showToast('🔄 Синхронизация с облаком...');
+      await supabaseClient.from('eco_trees').insert([{ 
+        type: newTree.type, 
+        place: newTree.place, 
+        planter: newTree.planter 
+      }]);
+    }
+
+    TREES.unshift(newTree);
+    form.reset();
+    closeModalById('plantModal');
+    renderTrees();
+    updateCounters();
+    showToast('🌱 Дерево успешно зарегистрировано!');
+  });
 }
 
 // ── 9. ФОРМА ВОЛОНТЁРА ───────────────────────────────────────
@@ -463,12 +503,10 @@ function initAdmin() {
     if (supabaseClient) {
       showToast('🔄 Синхронизация с сервером...');
       if (editId) {
-        // Обновление существующего объекта у всех
         const { error } = await supabaseClient.from('eco_sights').update(obj).eq('id', editId);
         if (error) { showToast('❌ Ошибка изменения'); return; }
         showToast('✏️ Объект обновлён глобально!');
       } else {
-        // Создание нового объекта для всех
         const { error } = await supabaseClient.from('eco_sights').insert([{ id: 'id-' + Date.now(), ...obj }]);
         if (error) { showToast('❌ Ошибка добавления'); return; }
         showToast('✅ Новый объект добавлен для всех!');
@@ -637,7 +675,7 @@ function handleRouting() {
     return;
   }
 
-  document.title = `${sight.name} — Eco Burabay`;
+  document.title = `${t(sight.nameKey || `sight_${sight.id}_name`)} — Eco Burabay`;
 
   function tryOpen(attempts) {
     const qrReady = typeof QRCode !== 'undefined';
