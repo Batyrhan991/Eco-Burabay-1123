@@ -125,24 +125,31 @@ function renderSights() {
 
     const qrPlaceholder = `qr-mini-${sight.id}`;
 
+    // Ищем переводы. Если их нет (например, для новых объектов из админки), используем текст из БД
+    const tName = t(`sight_${sight.id}_name`);
+    const name = tName !== `sight_${sight.id}_name` ? tName : sight.name;
+
+    const tShort = t(`sight_${sight.id}_short`);
+    const shortDesc = tShort !== `sight_${sight.id}_short` ? tShort : sight.shortDesc;
+
     card.innerHTML = `
       <div class="card__img">
-        <img src="${sight.image}" alt="${sight.name}" loading="lazy"
+        <img src="${sight.image}" alt="${name}" loading="lazy"
              onerror="this.src='https://images.unsplash.com/photo-1627564547012-6eb6dc355bfa?auto=format&fit=crop&w=800&q=80'">
       </div>
       <div class="card__body">
-        <h3 class="card__title">${sight.name}</h3>
-        <p class="card__desc">${sight.shortDesc}</p>
+        <h3 class="card__title">${name}</h3>
+        <p class="card__desc">${shortDesc}</p>
         <div class="card__qr">
           <div id="${qrPlaceholder}" class="card__qr-img"></div>
           <div class="card__qr-text">
-            <strong>QR-код объекта</strong><br>
-            Сканируйте для просмотра
+            <strong data-i18n="qr_scan_label">${t('qr_scan_label')}</strong><br>
+            <span data-i18n="qr_scan_sub">${t('qr_scan_sub')}</span>
           </div>
         </div>
         <div style="display:flex; gap:10px; margin-top:15px;">
-          <button class="btn btn--primary" style="flex:1; padding:10px;" onclick="openSightModal('${sight.id}')">Подробнее</button>
-          <button class="btn btn--outline" style="color:var(--slate); border-color:var(--slate); padding:10px 14px;" onclick="openQrModal('${sight.id}')">🔲 QR</button>
+          <button class="btn btn--primary" style="flex:1; padding:10px;" onclick="openSightModal('${sight.id}')" data-i18n="card_more">${t('card_more')}</button>
+          <button class="btn btn--outline" style="color:var(--slate); border-color:var(--slate); padding:10px 14px;" onclick="openQrModal('${sight.id}')" data-i18n="card_qr">${t('card_qr')}</button>
         </div>
       </div>
     `;
@@ -281,73 +288,44 @@ function renderTrees(filter = '') {
     : TREES;
 
   if (!filtered.length) {
-    grid.innerHTML = '<p style="color:#64748b;grid-column:1/-1;text-align:center;padding:40px 0;">Деревья не найдены</p>';
+    grid.innerHTML = `<p style="color:#64748b;grid-column:1/-1;text-align:center;padding:40px 0;" data-i18n="trees_empty">${t('trees_empty')}</p>`;
     return;
   }
 
+  // Карта соответствия типов из БД к ключам перевода
+  const typeMap = {
+    'pine': 'species_pine', 'Сосна обыкновенная': 'species_pine',
+    'birch': 'species_birch', 'Берёза повислая': 'species_birch',
+    'fir': 'species_fir', 'Ель сибирская': 'species_fir'
+  };
+
   filtered.forEach((tree, i) => {
-    const icons = { 'Сосна обыкновенная': '🌲', 'Берёза повислая': '🌳', 'Ель сибирская': '🎄' };
+    const icons = { 'Сосна обыкновенная': '🌲', 'Берёза повислая': '🌳', 'Ель сибирская': '🎄', 'pine': '🌲', 'birch': '🌳', 'fir': '🎄' };
     const icon = icons[tree.type] || '🌲';
+    
+    // Перевод динамических данных
+    const typeKey = typeMap[tree.type];
+    const localizedType = typeKey ? t(typeKey) : tree.type;
+    const planter = tree.planter || t('tree_anon');
+    const place = tree.place || t('tree_place');
+
     const card = document.createElement('div');
     card.className = 'tree-card reveal';
     card.style.transitionDelay = `${i * 60}ms`;
     card.innerHTML = `
       <div class="tree-card__header">
         <div style="font-size:2rem;">${icon}</div>
-        <strong>${tree.type}</strong>
+        <strong>${localizedType}</strong>
       </div>
       <div style="margin-top:12px;font-size:0.8rem;color:#64748b;line-height:1.8;">
-        <div>👤 ${tree.planter || 'Аноним'}</div>
-        <div>📍 ${tree.place || 'Бурабай'}</div>
+        <div>👤 ${planter}</div>
+        <div>📍 ${place}</div>
         <div>📅 ${tree.date || ''}</div>
       </div>
     `;
     grid.appendChild(card);
   });
   initReveal();
-}
-
-window.filterTrees = function() {
-  const val = document.getElementById('treeSearch')?.value || '';
-  renderTrees(val);
-};
-
-window.openPlantModal  = () => openModal('plantModal');
-
-// Добавление дерева напрямую в Supabase, чтобы его видели ВСЕ
-function setupPlantForm() {
-  const form = document.getElementById('plantForm');
-  if (!form) return;
-  form.addEventListener('submit', async (e) => {
-    e.preventDefault();
-    const name    = document.getElementById('pName').value.trim() || 'Эко-герой';
-    const species = document.getElementById('pSpecies').value;
-    const place   = document.getElementById('pPlace').value.trim() || 'Бурабай';
-
-    const newTree = {
-      id: 't-' + Date.now(),
-      type: species,
-      place,
-      date: new Date().toLocaleDateString('ru-RU'),
-      planter: name
-    };
-
-    if (supabaseClient) {
-      showToast('🌱 Сохранение в общий реестр...');
-      const { error } = await supabaseClient.from('eco_trees').insert([newTree]);
-      if (error) {
-        showToast('❌ Ошибка отправки в облако');
-        return;
-      }
-    }
-
-    await loadGlobalData(); // Перечитываем актуальную базу
-    renderTrees();
-    updateCounters();
-    closePlantModal();
-    form.reset();
-    showToast(`🌱 Дерево «${species}» добавлено для всех участников!`);
-  });
 }
 
 // ── 9. ФОРМА ВОЛОНТЁРА ───────────────────────────────────────
