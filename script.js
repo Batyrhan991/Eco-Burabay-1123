@@ -179,16 +179,26 @@ window.openSightModal = function(id) {
   const content = document.getElementById('modalContent');
   if (!modal || !content) return;
 
+  // Динамический перевод текста внутри модального окна
+  const tName = t(`sight_${sight.id}_name`);
+  const name = tName !== `sight_${sight.id}_name` ? tName : sight.name;
+
+  const tSub = t(`sight_${sight.id}_sub`);
+  const subtitle = tSub !== `sight_${sight.id}_sub` ? tSub : sight.subtitle;
+
+  const tDesc = t(`sight_${sight.id}_desc`);
+  const description = tDesc !== `sight_${sight.id}_desc` ? tDesc : (sight.description || sight.shortDesc);
+
   content.innerHTML = `
-    <img src="${sight.image}" alt="${sight.name}"
+    <img src="${sight.image}" alt="${name}"
          style="width:100%;height:260px;object-fit:cover;border-radius:12px;margin-bottom:20px;"
          onerror="this.style.display='none'">
-    <span class="section__eyebrow">${sight.subtitle}</span>
-    <h2 style="margin:10px 0 16px;">${sight.name}</h2>
-    <p style="color:#475569;line-height:1.7;">${sight.description || sight.shortDesc}</p>
+    <span class="section__eyebrow">${subtitle}</span>
+    <h2 style="margin:10px 0 16px;">${name}</h2>
+    <p style="color:#475569;line-height:1.7;">${description}</p>
     <div style="margin-top:24px;display:flex;gap:12px;">
-      <button class="btn btn--primary" onclick="openQrModal('${sight.id}'); closeModal();">
-        🔲 Получить QR-код
+      <button class="btn btn--primary" onclick="openQrModal('${sight.id}'); closeModal();" data-i18n="qr_get">
+        ${t('qr_get')}
       </button>
     </div>
   `;
