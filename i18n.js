@@ -60,6 +60,14 @@ const TRANSLATIONS = {
     species_pine:   '🌲 Сосна обыкновенная',
     species_birch:  '🌳 Берёза повислая',
     species_fir:    '🎄 Ель сибирская',
+    
+    // Прямой маппинг значений из БД для реестра деревьев
+    'pine':               '🌲 Сосна обыкновенная',
+    'birch':              '🌳 Берёза повислая',
+    'fir':                '🎄 Ель сибирская',
+    'Сосна обыкновенная': '🌲 Сосна обыкновенная',
+    'Берёза повислая':    '🌳 Берёза повислая',
+    'Ель сибирская':      '🎄 Ель сибирская',
 
     // ADMIN
     admin_eyebrow:    'Панель администратора',
@@ -219,6 +227,14 @@ const TRANSLATIONS = {
     species_birch:  '🌳 Салбыраңқы қайың',
     species_fir:    '🎄 Сібір шыршасы',
 
+    // Прямой маппинг значений из БД для реестра деревьев
+    'pine':               '🌲 Қарапайым қарағай',
+    'birch':              '🌳 Салбыраңқы қайың',
+    'fir':                '🎄 Сібір шыршасы',
+    'Сосна обыкновенная': '🌲 Қарапайым қарағай',
+    'Берёза повислая':    '🌳 Салбыраңқы қайың',
+    'Ель сибирская':      '🎄 Сібір шыршасы',
+
     admin_eyebrow:    'Әкімші панелі',
     admin_title:      'QR-нысандарды басқару',
     admin_add:        '➕ Нысан қосу',
@@ -367,6 +383,14 @@ const TRANSLATIONS = {
     species_birch:  '🌳 Silver Birch',
     species_fir:    '🎄 Siberian Spruce',
 
+    // Прямой маппинг значений из БД для реестра деревьев
+    'pine':               '🌲 Scots Pine',
+    'birch':              '🌳 Silver Birch',
+    'fir':                '🎄 Siberian Spruce',
+    'Сосна обыкновенная': '🌲 Scots Pine',
+    'Берёза повислая':    '🌳 Silver Birch',
+    'Ель сибирская':      '🎄 Siberian Spruce',
+
     admin_eyebrow:    'Admin Panel',
     admin_title:      'Manage QR Objects',
     admin_add:        '➕ Add Object',
@@ -480,10 +504,12 @@ function setLang(lang) {
   currentLang = lang;
   localStorage.setItem('eco_lang', lang);
   applyTranslations();
-  // Перерисовываем динамические компоненты если они уже инициализированы
+  
+  // Перерисовываем динамические компоненты, если они уже инициализированы
   if (typeof renderSights === 'function') renderSights();
   if (typeof renderTrees  === 'function') renderTrees();
   if (typeof renderAdminTable === 'function' && document.getElementById('adminSightsTableBody')) renderAdminTable();
+  
   updateLangButtons();
 }
 
@@ -514,7 +540,14 @@ function applyTranslations() {
   document.documentElement.lang = currentLang;
 }
 
+// Экспорт функций глобально
 window.t        = t;
 window.setLang  = setLang;
 window.applyTranslations = applyTranslations;
 window.currentLang = () => currentLang;
+
+// ── Автоматический запуск локализации при загрузке страницы ──
+document.addEventListener('DOMContentLoaded', () => {
+  applyTranslations();
+  updateLangButtons();
+});
