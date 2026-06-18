@@ -689,6 +689,12 @@ document.addEventListener('DOMContentLoaded', async () => {
   showToast('🔄 Загрузка данных эко-парка...');
   await loadGlobalData();
 
+   // Инициализация локализации
+  if (typeof applyTranslations === 'function') {
+    applyTranslations();
+    updateLangButtons();
+  }
+   
   // 2. Инициализируем весь интерфейс
   document.querySelectorAll('.modal').forEach(m => {
     m.querySelector('.modal__overlay')?.addEventListener('click', () => {
