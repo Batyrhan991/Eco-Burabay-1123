@@ -139,7 +139,9 @@ const TRANSLATIONS = {
     qr_modal_title: 'QR-код объекта',
     qr_download:    '⬇ Скачать QR-код',
     qr_get:         '🔲 Получить QR-код',
-
+    modal_get_qr: "🔲 Получить QR-код",
+    modal_qr_title: "QR-код объекта",
+    modal_dl_qr: "⬇ Скачать QR-код",
     // TOASTS
     toast_loading:   '🔄 Загрузка данных эко-парка...',
     toast_not_found: 'Объект не найден',
@@ -222,7 +224,9 @@ const TRANSLATIONS = {
     plant_zone:     'Егу секторы *',
     plant_zone_ph:  'Аймақ №3 (Кіші Шабақты көлі)',
     plant_btn:      'Тізімге енгізу 🌿',
-
+    modal_get_qr: "🔲 QR-кодты алу",
+    modal_qr_title: "Нысанның QR-коды",
+    modal_dl_qr: "⬇ QR-кодты жүктеу",
     species_pine:   '🌲 Қарапайым қарағай',
     species_birch:  '🌳 Салбыраңқы қайың',
     species_fir:    '🎄 Сібір шыршасы',
@@ -378,7 +382,9 @@ const TRANSLATIONS = {
     plant_zone:     'Planting Sector *',
     plant_zone_ph:  'Zone #3 (Small Chebachy Lake)',
     plant_btn:      'Add to Registry 🌿',
-
+modal_get_qr: "🔲 Get QR Code",
+    modal_qr_title: "Object QR Code",
+    modal_dl_qr: "⬇ Download QR Code",
     species_pine:   '🌲 Scots Pine',
     species_birch:  '🌳 Silver Birch',
     species_fir:    '🎄 Siberian Spruce',
