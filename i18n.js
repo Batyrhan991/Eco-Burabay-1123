@@ -331,7 +331,7 @@ const TRANSLATIONS = {
     hero_badge:    '🌿 Kazakhstan Ecological Project',
     hero_slogan:   'Scan. Discover. Preserve.',
     hero_slogan2:  'Grow Burabay together with us!',
-    hero_desc:     'A digital platform for preserving the nature and cultural heritage of Kazakhstan's pearl — the Burabay National Nature Park.',
+    hero_desc:     'A digital platform for preserving the nature and cultural heritage of Kazakhstan\'s pearl — the Burabay National Nature Park.',
     hero_btn_qr:   '🔲 Explore QR Guide',
     hero_btn_tree: '🌱 Plant a Tree',
 
